@@ -1,0 +1,23 @@
+{
+    "name": "DriveCalc - Calculadora para Motoristas",
+    "short_name": "DriveCalc",
+    "description": "Calculadora inteligente para motoristas de aplicativo",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#F5F6FA",
+    "theme_color": "#2C3E50",
+    "icons": [
+        {
+            "src": "icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+} 
