@@ -3,85 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#2C3E50">
-    <meta name="description" content="Calculadora inteligente para motoristas de aplicativo - Calcule seus ganhos líquidos com precisão">
-    <meta name="keywords" content="calculadora, motorista, uber, 99, ganhos, combustível">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="description" content="DriveCalc - Calculadora inteligente para motoristas de aplicativo. Calcule seus ganhos líquidos com precisão e gerencie suas finanças de forma profissional.">
+    <meta name="keywords" content="calculadora, motorista, uber, 99, ganhos, combustível, app, financeiro">
     <meta name="author" content="DriveCalc">
-    <title>DriveCalc - Sua Calculadora Inteligente</title>
+    <meta name="robots" content="index, follow">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="DriveCalc - Calculadora Inteligente para Motoristas">
+    <meta property="og:description" content="Calcule seus ganhos líquidos com precisão e gerencie suas finanças de forma profissional.">
+    <meta property="og:url" content="">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:title" content="DriveCalc - Calculadora Inteligente para Motoristas">
+    <meta property="twitter:description" content="Calcule seus ganhos líquidos com precisão e gerencie suas finanças de forma profissional.">
+    
+    <title>DriveCalc - Calculadora Inteligente para Motoristas</title>
     
     <!-- Preload critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     
+    <!-- Critical CSS inline para melhor performance -->
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --background-color: #f8fafc;
+            --text-primary: #0f172a;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #0ea5e9 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: var(--transition);
+        }
+    </style>
+    
     <!-- Stylesheets -->
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer">
     
-    <!-- Scripts -->
+    <!-- Scripts with defer for better performance -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+    
+    <!-- Service Worker para cache (futuro) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen">
+    <!-- Loading Screen Moderno -->
+    <div id="loading-screen" class="loading-screen" aria-hidden="true">
         <div class="loading-content">
             <div class="loading-spinner">
-                <i class="fas fa-car-side"></i>
+                <i class="fas fa-car-side" aria-hidden="true"></i>
             </div>
             <h3>Carregando DriveCalc...</h3>
             <div class="loading-bar">
                 <div class="loading-progress"></div>
             </div>
+            <p style="margin-top: 1rem; opacity: 0.8; font-size: 0.9rem;">Preparando sua experiência...</p>
         </div>
     </div>
 
-    <!-- Modal de Boas-vindas -->
+    <!-- Modal de Boas-vindas Melhorado -->
     <div id="welcome-modal" class="modal" role="dialog" aria-labelledby="welcome-title" aria-hidden="true">
         <div class="modal-content welcome-modal">
             <div class="modal-header">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; color: white; font-size: 1.5rem;">
+                    <i class="fas fa-car-side"></i>
+                </div>
                 <h3 id="welcome-title">Bem-vindo ao DriveCalc</h3>
-                <p class="welcome-subtitle">Configure seu perfil para começar</p>
+                <p class="welcome-subtitle">Configure seu perfil para uma experiência personalizada</p>
             </div>
             <div class="modal-body">
                 <form id="welcome-form" novalidate>
                     <div class="input-group">
-                        <label for="motorista-nome">Seu Nome *</label>
-                        <input type="text" id="motorista-nome" required placeholder="Digite seu nome" 
+                        <label for="motorista-nome">
+                            <i class="fas fa-user" style="margin-right: 0.5rem; color: #3b82f6;"></i>
+                            Seu Nome *
+                        </label>
+                        <input type="text" id="motorista-nome" required placeholder="Digite seu nome completo" 
                                aria-describedby="nome-error" autocomplete="name">
                         <span id="nome-error" class="error-message" role="alert"></span>
                     </div>
+                    
                     <div class="input-group">
-                        <label for="carro-inicial">Selecione seu Carro *</label>
+                        <label for="carro-inicial">
+                            <i class="fas fa-car" style="margin-right: 0.5rem; color: #3b82f6;"></i>
+                            Selecione seu Veículo *
+                        </label>
                         <select id="carro-inicial" required aria-describedby="carro-error">
-                            <option value="">Escolha seu carro</option>
-                            <optgroup label="Carros Populares">
+                            <option value="">Escolha seu veículo</option>
+                            <optgroup label="🚗 Carros Populares">
                                 <option value="11.5">Renault Sandero (11.5 km/L)</option>
                                 <option value="11.8">Volkswagen Gol (11.8 km/L)</option>
                                 <option value="12.5">Chevrolet Onix (12.5 km/L)</option>
                                 <option value="11.7">Hyundai HB20 (11.7 km/L)</option>
                                 <option value="11.6">Fiat Argo (11.6 km/L)</option>
+                                <option value="12.0">Ford Ka (12.0 km/L)</option>
                             </optgroup>
-                            <optgroup label="Sedans">
+                            <optgroup label="🚙 Sedans">
                                 <option value="12.3">Ford Ka Sedan (12.3 km/L)</option>
                                 <option value="11.5">Nissan Versa (11.5 km/L)</option>
                                 <option value="11.5">Hyundai HB20S (11.5 km/L)</option>
+                                <option value="11.8">Chevrolet Prisma (11.8 km/L)</option>
                             </optgroup>
-                            <optgroup label="Econômicos">
+                            <optgroup label="💚 Econômicos">
                                 <option value="13.0">Toyota Yaris (13.0 km/L)</option>
                                 <option value="13.5">Volkswagen Up (13.5 km/L)</option>
+                                <option value="14.0">Fiat Mobi (14.0 km/L)</option>
                             </optgroup>
-                            <optgroup label="Elétricos">
+                            <optgroup label="⚡ Elétricos/Híbridos">
                                 <option value="6.5">BYD Dolphin (6.5 km/kWh)</option>
+                                <option value="7.0">Nissan Leaf (7.0 km/kWh)</option>
+                                <option value="18.0">Toyota Prius (18.0 km/L)</option>
                             </optgroup>
                         </select>
                         <span id="carro-error" class="error-message" role="alert"></span>
                     </div>
+                    
+                    <div class="input-group">
+                        <label for="cidade-inicial">
+                            <i class="fas fa-map-marker-alt" style="margin-right: 0.5rem; color: #3b82f6;"></i>
+                            Sua Cidade (Opcional)
+                        </label>
+                        <input type="text" id="cidade-inicial" placeholder="Ex: São Paulo, SP" 
+                               aria-describedby="cidade-help" autocomplete="address-level2">
+                        <small id="cidade-help">Isso nos ajuda a fornecer dados mais precisos sobre combustível</small>
+                    </div>
+                    
                     <button type="submit" class="welcome-btn">
-                        <i class="fas fa-check" aria-hidden="true"></i>
-                        <span>Começar</span>
+                        <i class="fas fa-rocket" aria-hidden="true"></i>
+                        <span>Começar Jornada</span>
                     </button>
                 </form>
             </div>
@@ -89,13 +170,14 @@
     </div>
 
     <div class="app-container">
-        <!-- Mobile Menu Toggle -->
-        <button class="mobile-menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+        <!-- Mobile Menu Toggle Melhorado -->
+        <button class="mobile-menu-toggle" aria-label="Abrir menu de navegação" aria-expanded="false">
             <span></span>
             <span></span>
             <span></span>
         </button>
 
+        <!-- Sidebar Moderna -->
         <aside class="sidebar" role="navigation" aria-label="Menu principal">
             <div class="logo">
                 <a href="#dashboard" aria-label="DriveCalc - Ir para dashboard">
@@ -103,45 +185,61 @@
                     <h1>DriveCalc</h1>
                 </a>
             </div>
+            
             <nav>
                 <ul role="menubar">
                     <li role="none">
-                        <a href="#dashboard" role="menuitem" aria-current="page">
+                        <a href="#dashboard" role="menuitem" aria-current="page" data-section="dashboard">
                             <i class="fas fa-chart-line" aria-hidden="true"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
                     <li class="active" role="none">
-                        <a href="#calculadora" role="menuitem">
+                        <a href="#calculadora" role="menuitem" data-section="calculadora">
                             <i class="fas fa-calculator" aria-hidden="true"></i>
                             <span>Calculadora</span>
                         </a>
                     </li>
                     <li role="none">
-                        <a href="#historico" role="menuitem">
+                        <a href="#historico" role="menuitem" data-section="historico">
                             <i class="fas fa-history" aria-hidden="true"></i>
                             <span>Histórico</span>
                         </a>
                     </li>
                     <li role="none">
-                        <a href="#configuracoes" role="menuitem">
+                        <a href="#relatorios" role="menuitem" data-section="relatorios">
+                            <i class="fas fa-chart-bar" aria-hidden="true"></i>
+                            <span>Relatórios</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="#configuracoes" role="menuitem" data-section="configuracoes">
                             <i class="fas fa-cog" aria-hidden="true"></i>
                             <span>Configurações</span>
                         </a>
                     </li>
                 </ul>
             </nav>
+            
+            <!-- Footer da Sidebar -->
+            <div style="padding: 1rem; border-top: 1px solid var(--border-color); margin-top: auto;">
+                <div style="text-align: center; color: var(--text-muted); font-size: 0.75rem;">
+                    <p>DriveCalc v2.0</p>
+                    <p>© 2024 - Todos os direitos reservados</p>
+                </div>
+            </div>
         </aside>
 
+        <!-- Main Content -->
         <main class="main-content" role="main">
+            <!-- Header Moderno -->
             <header class="app-header">
                 <div class="header-content">
-                    <h2 class="page-title">Dashboard</h2>
+                    <div>
+                        <h2 class="page-title">Dashboard</h2>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;" id="current-date"></p>
+                    </div>
                     <div class="user-menu">
-                        <button class="notifications-btn" aria-label="Notificações" title="Notificações">
-                            <i class="fas fa-bell" aria-hidden="true"></i>
-                            <span class="badge" aria-label="3 notificações">3</span>
-                        </button>
                         <div class="user-profile">
                             <div class="profile-icon" aria-hidden="true">
                                 <i class="fas fa-user"></i>
@@ -152,9 +250,13 @@
                 </div>
             </header>
 
-            <section id="dashboard" class="dashboard" aria-labelledby="dashboard-title">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="section active dashboard" aria-labelledby="dashboard-title">
                 <div class="section-header">
-                    <h2 id="dashboard-title" class="sr-only">Dashboard Principal</h2>
+                    <div>
+                        <h2 id="dashboard-title" class="sr-only">Dashboard Principal</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 0;">Acompanhe seu desempenho em tempo real</p>
+                    </div>
                     <div class="dashboard-actions">
                         <button class="export-btn" aria-label="Exportar relatório em PDF">
                             <i class="fas fa-file-pdf" aria-hidden="true"></i>
@@ -163,6 +265,7 @@
                     </div>
                 </div>
 
+                <!-- Stats Grid Melhorado -->
                 <div class="stats-grid" role="region" aria-label="Estatísticas do dia">
                     <div class="stat-card" tabindex="0">
                         <div class="stat-icon earnings" aria-hidden="true">
@@ -174,6 +277,7 @@
                             <span class="stat-change neutral">Atualizado em tempo real</span>
                         </div>
                     </div>
+                    
                     <div class="stat-card" tabindex="0">
                         <div class="stat-icon distance" aria-hidden="true">
                             <i class="fas fa-road"></i>
@@ -184,6 +288,7 @@
                             <span class="stat-change neutral">Atualizado em tempo real</span>
                         </div>
                     </div>
+                    
                     <div class="stat-card" tabindex="0">
                         <div class="stat-icon fuel" aria-hidden="true">
                             <i class="fas fa-gas-pump"></i>
@@ -194,6 +299,7 @@
                             <span class="stat-change neutral">Atualizado em tempo real</span>
                         </div>
                     </div>
+                    
                     <div class="stat-card" tabindex="0">
                         <div class="stat-icon time" aria-hidden="true">
                             <i class="fas fa-clock"></i>
@@ -206,19 +312,22 @@
                     </div>
                 </div>
 
+                <!-- Charts Grid Melhorado -->
                 <div class="charts-grid" role="region" aria-label="Gráficos de desempenho">
                     <div class="chart-card">
                         <div class="chart-header">
-                            <h3>Ganhos dos Últimos 7 Dias</h3>
+                            <h3>Ganhos dos Últimos Dias</h3>
                             <div class="chart-controls">
                                 <button class="chart-btn" data-period="7" aria-pressed="true">7 dias</button>
                                 <button class="chart-btn" data-period="30">30 dias</button>
+                                <button class="chart-btn" data-period="90">3 meses</button>
                             </div>
                         </div>
                         <div class="chart-container">
                             <canvas id="ganhosChart" aria-label="Gráfico de ganhos dos últimos dias"></canvas>
                         </div>
                     </div>
+                    
                     <div class="chart-card">
                         <div class="chart-header">
                             <h3>Distribuição de Gastos</h3>
@@ -228,54 +337,95 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Resumo Semanal -->
+                <div class="chart-card" style="margin-top: 2rem;">
+                    <div class="chart-header">
+                        <h3>Resumo da Semana</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">Análise detalhada do seu desempenho</p>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                        <div class="result-item">
+                            <div class="result-label">Ganho Médio/Dia</div>
+                            <div class="result-value" id="media-dia">R$ 0,00</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Melhor Dia</div>
+                            <div class="result-value positive" id="melhor-dia">R$ 0,00</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Total da Semana</div>
+                            <div class="result-value" id="total-semana">R$ 0,00</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-label">Eficiência</div>
+                            <div class="result-value" id="eficiencia">0%</div>
+                        </div>
+                    </div>
+                </div>
             </section>
 
-            <section id="calculadora" class="calculator-section" aria-labelledby="calc-title">
+            <!-- Calculadora Section Melhorada -->
+            <section id="calculadora" class="section calculator-section" aria-labelledby="calc-title">
                 <div class="calculator-card">
                     <div class="section-header">
-                        <h2 id="calc-title">Calculadora Rápida</h2>
-                        <p class="section-subtitle">Calcule seus ganhos líquidos com precisão</p>
+                        <div>
+                            <h2 id="calc-title">Calculadora Inteligente</h2>
+                            <p class="section-subtitle">Calcule seus ganhos líquidos com precisão e obtenha insights valiosos</p>
+                        </div>
                     </div>
                     
                     <form id="quick-calc" novalidate>
                         <div class="form-grid">
+                            <!-- Seleção de Veículo -->
                             <div class="input-group">
-                                <label for="carro">Selecione seu carro *</label>
+                                <label for="carro">
+                                    <i class="fas fa-car" style="margin-right: 0.5rem; color: #3b82f6;"></i>
+                                    Selecione seu veículo *
+                                </label>
                                 <select id="carro" class="form-control" required aria-describedby="carro-calc-error">
-                                    <option value="">Selecione um carro</option>
-                                    <optgroup label="Carros Populares">
+                                    <option value="">Selecione um veículo</option>
+                                    <optgroup label="🚗 Carros Populares">
                                         <option value="11.5">Renault Sandero (11.5 km/L)</option>
                                         <option value="11.8">Volkswagen Gol (11.8 km/L)</option>
                                         <option value="12.5">Chevrolet Onix (12.5 km/L)</option>
                                         <option value="11.7">Hyundai HB20 (11.7 km/L)</option>
                                         <option value="11.6">Fiat Argo (11.6 km/L)</option>
                                     </optgroup>
-                                    <optgroup label="Sedans">
+                                    <optgroup label="🚙 Sedans">
                                         <option value="12.3">Ford Ka Sedan (12.3 km/L)</option>
                                         <option value="11.5">Nissan Versa (11.5 km/L)</option>
                                         <option value="11.5">Hyundai HB20S (11.5 km/L)</option>
                                     </optgroup>
-                                    <optgroup label="Econômicos">
+                                    <optgroup label="💚 Econômicos">
                                         <option value="13.0">Toyota Yaris (13.0 km/L)</option>
                                         <option value="13.5">Volkswagen Up (13.5 km/L)</option>
                                     </optgroup>
-                                    <optgroup label="Elétricos">
+                                    <optgroup label="⚡ Elétricos">
                                         <option value="6.5">BYD Dolphin (6.5 km/kWh)</option>
                                     </optgroup>
                                 </select>
                                 <span id="carro-calc-error" class="error-message" role="alert"></span>
                             </div>
 
+                            <!-- Consumo -->
                             <div class="input-group">
-                                <label for="kmL">Consumo de combustível (KM/L) *</label>
+                                <label for="kmL">
+                                    <i class="fas fa-tachometer-alt" style="margin-right: 0.5rem; color: #10b981;"></i>
+                                    Consumo de combustível (KM/L) *
+                                </label>
                                 <input type="number" id="kmL" step="0.1" min="1" max="50" placeholder="0.0" 
                                        aria-describedby="kml-help kml-error" required>
-                                <small id="kml-help">Este valor é preenchido automaticamente ao selecionar um carro</small>
+                                <small id="kml-help">Preenchido automaticamente ao selecionar um veículo</small>
                                 <span id="kml-error" class="error-message" role="alert"></span>
                             </div>
 
+                            <!-- Ganhos Brutos -->
                             <div class="input-group">
-                                <label for="ganhos">Ganhos Brutos (R$) *</label>
+                                <label for="ganhos">
+                                    <i class="fas fa-money-bill-wave" style="margin-right: 0.5rem; color: #10b981;"></i>
+                                    Ganhos Brutos (R$) *
+                                </label>
                                 <div class="input-with-icon">
                                     <span class="input-icon">R$</span>
                                     <input type="number" id="ganhos" step="0.01" min="0" placeholder="0.00" 
@@ -284,9 +434,13 @@
                                 <span id="ganhos-error" class="error-message" role="alert"></span>
                             </div>
 
+                            <!-- Quilômetros -->
                             <div class="input-group">
-                                <label for="km">Quilômetros Rodados *</label>
-                                <div class="input-with-icon">
+                                <label for="km">
+                                    <i class="fas fa-road" style="margin-right: 0.5rem; color: #3b82f6;"></i>
+                                    Quilômetros Rodados *
+                                </label>
+                                <div class="input-with-icon has-suffix">
                                     <input type="number" id="km" step="0.1" min="0" placeholder="0.0" 
                                            aria-describedby="km-error" required>
                                     <span class="input-suffix">km</span>
@@ -294,158 +448,256 @@
                                 <span id="km-error" class="error-message" role="alert"></span>
                             </div>
 
+                            <!-- Preço do Combustível -->
                             <div class="input-group">
-                                <label for="combustivel">Preço do Combustível (R$/L) *</label>
+                                <label for="precoCombustivel">
+                                    <i class="fas fa-gas-pump" style="margin-right: 0.5rem; color: #f59e0b;"></i>
+                                    Preço do Combustível (R$/L) *
+                                </label>
                                 <div class="input-with-icon">
                                     <span class="input-icon">R$</span>
-                                    <input type="number" id="combustivel" step="0.01" min="0" placeholder="0.00" 
-                                           aria-describedby="combustivel-error" required>
+                                    <input type="number" id="precoCombustivel" step="0.01" min="0" placeholder="0.00" 
+                                           aria-describedby="preco-error" required>
                                 </div>
-                                <span id="combustivel-error" class="error-message" role="alert"></span>
+                                <span id="preco-error" class="error-message" role="alert"></span>
                             </div>
 
+                            <!-- Manutenção -->
                             <div class="input-group">
-                                <label for="manutencao">Manutenção e Desgaste (%)</label>
-                                <div class="input-with-icon">
-                                    <input type="number" id="manutencao" step="0.01" value="18" min="0" max="100" 
+                                <label for="manutencao">
+                                    <i class="fas fa-tools" style="margin-right: 0.5rem; color: #8b5cf6;"></i>
+                                    Manutenção (% dos ganhos)
+                                </label>
+                                <div class="input-with-icon has-suffix">
+                                    <input type="number" id="manutencao" step="0.1" min="0" max="100" placeholder="5.0" 
                                            aria-describedby="manutencao-help">
                                     <span class="input-suffix">%</span>
                                 </div>
-                                <small id="manutencao-help">Valor padrão de 18%, podendo ser alterado conforme necessário</small>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="outros-gastos">Outros Gastos (R$)</label>
-                                <div class="input-with-icon">
-                                    <span class="input-icon">R$</span>
-                                    <input type="number" id="outros-gastos" step="0.01" min="0" placeholder="0.00" 
-                                           aria-describedby="outros-help">
-                                </div>
-                                <small id="outros-help">Inclua aqui outros gastos como alimentação, estacionamento, etc.</small>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="tempo-online">Tempo Online (horas) *</label>
-                                <div class="input-with-icon">
-                                    <input type="number" id="tempo-online" step="0.5" min="0" placeholder="0.0" 
-                                           aria-describedby="tempo-error" required>
-                                    <span class="input-suffix">h</span>
-                                </div>
-                                <small>Quantas horas você ficou disponível no aplicativo</small>
-                                <span id="tempo-error" class="error-message" role="alert"></span>
+                                <small id="manutencao-help">Recomendado: 2% á 5% dos ganhos brutos</small>
                             </div>
                         </div>
 
-                        <div class="form-actions">
-                            <button type="button" class="secondary-btn" id="limpar-form">
+                        <!-- Botões de Ação -->
+                        <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 2rem;">
+                            <button type="submit" class="btn">
+                                <i class="fas fa-calculator" aria-hidden="true"></i>
+                                <span>Calcular Ganhos</span>
+                            </button>
+                            <button type="button" id="clear-form" class="btn btn-secondary">
                                 <i class="fas fa-eraser" aria-hidden="true"></i>
                                 <span>Limpar</span>
                             </button>
-                            <button type="submit" class="calculate-btn">
-                                <i class="fas fa-calculator" aria-hidden="true"></i>
-                                <span>Calcular</span>
+                            <button type="button" id="save-calc" class="btn btn-success" style="display: none;">
+                                <i class="fas fa-save" aria-hidden="true"></i>
+                                <span>Salvar Cálculo</span>
                             </button>
                         </div>
                     </form>
+
+                    <!-- Resultados -->
+                    <div id="results-section" class="results-section" style="display: none;">
+                        <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-primary);">
+                            <i class="fas fa-chart-pie" style="margin-right: 0.5rem; color: #3b82f6;"></i>
+                            Resultados do Cálculo
+                        </h3>
+                        <div class="results-grid">
+                            <div class="result-item">
+                                <div class="result-label">Ganho Líquido</div>
+                                <div class="result-value positive" id="ganho-liquido">R$ 0,00</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Gasto Combustível</div>
+                                <div class="result-value" id="gasto-combustivel">R$ 0,00</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Gasto Manutenção</div>
+                                <div class="result-value" id="gasto-manutencao">R$ 0,00</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Margem de Lucro</div>
+                                <div class="result-value" id="margem-lucro">0%</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Ganho por KM</div>
+                                <div class="result-value" id="ganho-por-km">R$ 0,00</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Eficiência</div>
+                                <div class="result-value" id="eficiencia-calc">Excelente</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Dicas e Insights -->
+                        <div id="insights-section" style="margin-top: 2rem; padding: 1.5rem; background: var(--info-light); border-radius: var(--border-radius-lg); border-left: 4px solid var(--info-color);">
+                            <h4 style="margin-bottom: 1rem; color: var(--info-color);">
+                                <i class="fas fa-lightbulb" style="margin-right: 0.5rem;"></i>
+                                Insights e Dicas
+                            </h4>
+                            <div id="insights-content">
+                                <!-- Conteúdo será preenchido dinamicamente -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <section id="historico" class="history-section" aria-labelledby="history-title">
-                <div class="history-card">
-                    <div class="section-header">
+            <!-- Histórico Section -->
+            <section id="historico" class="section history-section" aria-labelledby="history-title">
+                <div class="section-header">
+                    <div>
                         <h2 id="history-title">Histórico de Cálculos</h2>
-                        <div class="history-actions">
-                            <button class="secondary-btn" id="limpar-historico">
-                                <i class="fas fa-trash" aria-hidden="true"></i>
-                                <span>Limpar Histórico</span>
-                            </button>
-                            <button class="primary-btn" id="exportar-historico">
-                                <i class="fas fa-download" aria-hidden="true"></i>
-                                <span>Exportar</span>
-                            </button>
-                        </div>
+                        <p style="color: var(--text-secondary); margin-bottom: 0;">Acompanhe seus cálculos anteriores e tendências</p>
                     </div>
-                    <div class="history-content">
-                        <div class="no-data" id="no-history">
-                            <i class="fas fa-history" aria-hidden="true"></i>
-                            <h3>Nenhum cálculo registrado</h3>
-                            <p>Seus cálculos aparecerão aqui após serem realizados</p>
-                        </div>
-                        <div class="history-list" id="history-list" style="display: none;">
-                            <!-- Histórico será inserido aqui via JavaScript -->
+                    <div class="dashboard-actions">
+                        <button class="btn btn-secondary" id="clear-history">
+                            <i class="fas fa-trash" aria-hidden="true"></i>
+                            <span>Limpar Histórico</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="history-content">
+                    <div class="history-card">
+                        <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                            <i class="fas fa-history" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+                            <h3>Nenhum cálculo encontrado</h3>
+                            <p>Faça seu primeiro cálculo na seção Calculadora para ver o histórico aqui.</p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section id="configuracoes" class="settings-section" aria-labelledby="settings-title">
-                <div class="settings-card">
-                    <div class="section-header">
-                        <h2 id="settings-title">Configurações</h2>
+            <!-- Relatórios Section -->
+            <section id="relatorios" class="section" aria-labelledby="reports-title">
+                <div class="section-header">
+                    <div>
+                        <h2 id="reports-title">Relatórios Avançados</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 0;">Análises detalhadas do seu desempenho</p>
                     </div>
-                    <div class="settings-content">
-                        <div class="settings-group">
-                            <h3>Perfil do Usuário</h3>
-                            <div class="profile-settings">
-                                <div class="input-group">
-                                    <label for="user-name-setting">Nome</label>
-                                    <input type="text" id="user-name-setting" placeholder="Seu nome">
-                                </div>
-                                <div class="input-group">
-                                    <label for="user-car-setting">Veículo Principal</label>
-                                    <select id="user-car-setting">
-                                        <option value="">Selecione um carro</option>
-                                        <!-- Opções serão preenchidas via JavaScript -->
-                                    </select>
-                                </div>
-                                <button class="primary-btn" id="save-profile">
-                                    <i class="fas fa-save" aria-hidden="true"></i>
-                                    <span>Salvar Perfil</span>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="settings-group">
-                            <h3>Sobre o DriveCalc</h3>
-                            <div class="version-info">
-                                <div class="info-item">
-                                    <span class="info-label">Versão:</span>
-                                    <span class="version-value">2.0 (BETA)</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Última atualização:</span>
-                                    <span>Dezembro 2024</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="settings-group">
-                            <h3>Contato e Suporte</h3>
-                            <div class="contact-info">
-                                <div class="contact-item">
-                                    <i class="fas fa-envelope" aria-hidden="true"></i>
-                                    <span>leosmrosa@gmail.com</span>
-                                </div>
-                                <div class="contact-item">
-                                    <i class="fas fa-headset" aria-hidden="true"></i>
-                                    <span>Suporte:</span>
-                                    <a href="https://wa.me/5547997190249" class="whatsapp-support" target="_blank" rel="noopener">
-                                        <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                                        <span>WhatsApp</span>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
+                </div>
 
-                        <div class="settings-group">
-                            <h3>Dados e Privacidade</h3>
-                            <div class="privacy-settings">
-                                <button class="danger-btn" id="reset-data">
-                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
-                                    <span>Resetar Todos os Dados</span>
-                                </button>
-                                <small>Esta ação não pode ser desfeita</small>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Relatório Mensal</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">Análise completa do mês</p>
+                        </div>
+                        <div style="padding: 1rem 0;">
+                            <div class="result-item">
+                                <div class="result-label">Total do Mês</div>
+                                <div class="result-value" id="total-mes">R$ 0,00</div>
                             </div>
+                            <div class="result-item">
+                                <div class="result-label">Média Diária</div>
+                                <div class="result-value" id="media-diaria">R$ 0,00</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Dias Trabalhados</div>
+                                <div class="result-value" id="dias-trabalhados">0</div>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" style="width: 100%;">
+                            <i class="fas fa-download"></i>
+                            Baixar Relatório
+                        </button>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>Comparativo</h3>
+                            <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0;">Mês atual vs anterior</p>
+                        </div>
+                        <div style="padding: 1rem 0;">
+                            <div class="result-item">
+                                <div class="result-label">Crescimento</div>
+                                <div class="result-value positive" id="crescimento">+0%</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Eficiência</div>
+                                <div class="result-value" id="eficiencia-comparativo">Estável</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Configurações Section -->
+            <section id="configuracoes" class="section settings-section" aria-labelledby="settings-title">
+                <div class="section-header">
+                    <div>
+                        <h2 id="settings-title">Configurações</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 0;">Personalize sua experiência no DriveCalc</p>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <div class="settings-group">
+                        <h3>Perfil do Usuário</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Nome do Motorista</div>
+                                <div class="setting-description">Seu nome será exibido no dashboard</div>
+                            </div>
+                            <input type="text" id="user-name-setting" class="form-control" style="max-width: 200px;" placeholder="Seu nome">
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Veículo Padrão</div>
+                                <div class="setting-description">Veículo selecionado automaticamente nos cálculos</div>
+                            </div>
+                            <select id="default-car-setting" class="form-control" style="max-width: 250px;">
+                                <option value="">Selecionar veículo</option>
+                                <!-- Opções serão preenchidas dinamicamente -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Preferências</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Notificações</div>
+                                <div class="setting-description">Receber alertas e lembretes</div>
+                            </div>
+                            <div class="toggle-switch" id="notifications-toggle"></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Salvar Automaticamente</div>
+                                <div class="setting-description">Salvar cálculos automaticamente no histórico</div>
+                            </div>
+                            <div class="toggle-switch active" id="auto-save-toggle"></div>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Modo Escuro</div>
+                                <div class="setting-description">Interface com tema escuro (em breve)</div>
+                            </div>
+                            <div class="toggle-switch" id="dark-mode-toggle"></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Dados e Privacidade</h3>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Exportar Dados</div>
+                                <div class="setting-description">Baixar todos os seus dados em formato JSON</div>
+                            </div>
+                            <button class="btn btn-secondary" id="export-data">
+                                <i class="fas fa-download"></i>
+                                Exportar
+                            </button>
+                        </div>
+                        <div class="setting-item">
+                            <div class="setting-info">
+                                <div class="setting-label">Limpar Todos os Dados</div>
+                                <div class="setting-description">Remove permanentemente todos os dados salvos</div>
+                            </div>
+                            <button class="btn btn-danger" id="clear-all-data">
+                                <i class="fas fa-trash"></i>
+                                Limpar Tudo
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -453,41 +705,16 @@
         </main>
     </div>
 
-    <!-- Modal de Resultados -->
-    <div id="resultado-modal" class="modal" role="dialog" aria-labelledby="resultado-title" aria-hidden="true">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="resultado-title">Resultado do Cálculo</h3>
-                <button class="close-modal" aria-label="Fechar modal">
-                    <i class="fas fa-times" aria-hidden="true"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="resultado-content">
-                    <!-- Resultados serão inseridos aqui via JavaScript -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <div class="modal-actions">
-                    <button class="action-btn whatsapp-btn">
-                        <i class="fab fa-whatsapp" aria-hidden="true"></i>
-                        <span>WhatsApp</span>
-                    </button>
-                    <button class="action-btn pdf-btn">
-                        <i class="fas fa-file-pdf" aria-hidden="true"></i>
-                        <span>Baixar PDF</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Toast Container -->
+    <div id="toast-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 1080;"></div>
 
-    <!-- Toast Notifications -->
-    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true">
-        <!-- Toasts serão inseridos aqui via JavaScript -->
-    </div>
-
-    <script src="script.js"></script>
+    <!-- Scripts -->
+        <script src="script.js" defer></script>t>
+    
+    <!-- Analytics (futuro) -->
+    <script>
+        // Google Analytics ou similar
+    </script>
 </body>
 </html>
 
