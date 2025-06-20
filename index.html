@@ -4,48 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#2C3E50">
-    <meta name="description" content="Calculadora inteligente para motoristas de aplicativo">
+    <meta name="description" content="Calculadora inteligente para motoristas de aplicativo - Calcule seus ganhos líquidos com precisão">
+    <meta name="keywords" content="calculadora, motorista, uber, 99, ganhos, combustível">
+    <meta name="author" content="DriveCalc">
     <title>DriveCalc - Sua Calculadora Inteligente</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <i class="fas fa-car-side"></i>
+            </div>
+            <h3>Carregando DriveCalc...</h3>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal de Boas-vindas -->
-    <div id="welcome-modal" class="modal">
+    <div id="welcome-modal" class="modal" role="dialog" aria-labelledby="welcome-title" aria-hidden="true">
         <div class="modal-content welcome-modal">
             <div class="modal-header">
-                <h3>Bem-vindo ao DriveCalc</h3>
+                <h3 id="welcome-title">Bem-vindo ao DriveCalc</h3>
+                <p class="welcome-subtitle">Configure seu perfil para começar</p>
             </div>
             <div class="modal-body">
-                <form id="welcome-form">
+                <form id="welcome-form" novalidate>
                     <div class="input-group">
-                        <label for="motorista-nome">Seu Nome</label>
-                        <input type="text" id="motorista-nome" required placeholder="Digite seu nome">
+                        <label for="motorista-nome">Seu Nome *</label>
+                        <input type="text" id="motorista-nome" required placeholder="Digite seu nome" 
+                               aria-describedby="nome-error" autocomplete="name">
+                        <span id="nome-error" class="error-message" role="alert"></span>
                     </div>
                     <div class="input-group">
-                        <label for="carro-inicial">Selecione seu Carro</label>
-                        <select id="carro-inicial" required>
+                        <label for="carro-inicial">Selecione seu Carro *</label>
+                        <select id="carro-inicial" required aria-describedby="carro-error">
                             <option value="">Escolha seu carro</option>
-                            <option value="11.5">Renault Sandero</option>
-                            <option value="11.8">Volkswagen Gol</option>
-                            <option value="12.5">Chevrolet Onix</option>
-                            <option value="11.7">Hyundai HB20</option>
-                            <option value="11.6">Fiat Argo</option>
-                            <option value="12.3">Ford Ka Sedan</option>
-                            <option value="11.5">Nissan Versa</option>
-                            <option value="13.0">Toyota Yaris</option>
-                            <option value="11.5">Hyundai HB20S</option>
-                            <option value="6.5">BYD Dolphin (elétrico)</option>
-                            <option value="13.5">Volkswagen Up</option>
+                            <optgroup label="Carros Populares">
+                                <option value="11.5">Renault Sandero (11.5 km/L)</option>
+                                <option value="11.8">Volkswagen Gol (11.8 km/L)</option>
+                                <option value="12.5">Chevrolet Onix (12.5 km/L)</option>
+                                <option value="11.7">Hyundai HB20 (11.7 km/L)</option>
+                                <option value="11.6">Fiat Argo (11.6 km/L)</option>
+                            </optgroup>
+                            <optgroup label="Sedans">
+                                <option value="12.3">Ford Ka Sedan (12.3 km/L)</option>
+                                <option value="11.5">Nissan Versa (11.5 km/L)</option>
+                                <option value="11.5">Hyundai HB20S (11.5 km/L)</option>
+                            </optgroup>
+                            <optgroup label="Econômicos">
+                                <option value="13.0">Toyota Yaris (13.0 km/L)</option>
+                                <option value="13.5">Volkswagen Up (13.5 km/L)</option>
+                            </optgroup>
+                            <optgroup label="Elétricos">
+                                <option value="6.5">BYD Dolphin (6.5 km/kWh)</option>
+                            </optgroup>
                         </select>
+                        <span id="carro-error" class="error-message" role="alert"></span>
                     </div>
                     <button type="submit" class="welcome-btn">
-                        <i class="fas fa-check"></i>
-                        Começar
+                        <i class="fas fa-check" aria-hidden="true"></i>
+                        <span>Começar</span>
                     </button>
                 </form>
             </div>
@@ -53,30 +89,43 @@
     </div>
 
     <div class="app-container">
-        <aside class="sidebar">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" aria-label="Abrir menu" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
+        <aside class="sidebar" role="navigation" aria-label="Menu principal">
             <div class="logo">
-                <a href="#dashboard">
-                    <i class="fas fa-car-side"></i>
+                <a href="#dashboard" aria-label="DriveCalc - Ir para dashboard">
+                    <i class="fas fa-car-side" aria-hidden="true"></i>
                     <h1>DriveCalc</h1>
                 </a>
             </div>
             <nav>
-                <ul>
-                    <li>
-                        <a href="#dashboard">
-                            <i class="fas fa-chart-line"></i>
+                <ul role="menubar">
+                    <li role="none">
+                        <a href="#dashboard" role="menuitem" aria-current="page">
+                            <i class="fas fa-chart-line" aria-hidden="true"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li class="active">
-                        <a href="#calculadora">
-                            <i class="fas fa-calculator"></i>
+                    <li class="active" role="none">
+                        <a href="#calculadora" role="menuitem">
+                            <i class="fas fa-calculator" aria-hidden="true"></i>
                             <span>Calculadora</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="#configuracoes">
-                            <i class="fas fa-cog"></i>
+                    <li role="none">
+                        <a href="#historico" role="menuitem">
+                            <i class="fas fa-history" aria-hidden="true"></i>
+                            <span>Histórico</span>
+                        </a>
+                    </li>
+                    <li role="none">
+                        <a href="#configuracoes" role="menuitem">
+                            <i class="fas fa-cog" aria-hidden="true"></i>
                             <span>Configurações</span>
                         </a>
                     </li>
@@ -84,162 +133,318 @@
             </nav>
         </aside>
 
-        <main class="main-content">
-            <header>
-                <div class="user-menu">
-                    <div class="user-profile">
-                        <div class="profile-icon">
-                            <i class="fas fa-user"></i>
+        <main class="main-content" role="main">
+            <header class="app-header">
+                <div class="header-content">
+                    <h2 class="page-title">Dashboard</h2>
+                    <div class="user-menu">
+                        <button class="notifications-btn" aria-label="Notificações" title="Notificações">
+                            <i class="fas fa-bell" aria-hidden="true"></i>
+                            <span class="badge" aria-label="3 notificações">3</span>
+                        </button>
+                        <div class="user-profile">
+                            <div class="profile-icon" aria-hidden="true">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <span id="user-greeting">Olá, Motorista</span>
                         </div>
-                        <span id="user-greeting">Olá, Motorista</span>
                     </div>
                 </div>
             </header>
 
-            <section id="dashboard" class="dashboard">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
+            <section id="dashboard" class="dashboard" aria-labelledby="dashboard-title">
+                <div class="section-header">
+                    <h2 id="dashboard-title" class="sr-only">Dashboard Principal</h2>
+                    <div class="dashboard-actions">
+                        <button class="export-btn" aria-label="Exportar relatório em PDF">
+                            <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                            <span>Exportar PDF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-grid" role="region" aria-label="Estatísticas do dia">
+                    <div class="stat-card" tabindex="0">
+                        <div class="stat-icon earnings" aria-hidden="true">
                             <i class="fas fa-money-bill-wave"></i>
                         </div>
                         <div class="stat-info">
                             <h3>Ganhos do Dia</h3>
-                            <p class="stat-value">R$ 0,00</p>
-                            <span class="stat-change">Atualizado em tempo real</span>
+                            <p class="stat-value" id="ganhos-dia">R$ 0,00</p>
+                            <span class="stat-change neutral">Atualizado em tempo real</span>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
+                    <div class="stat-card" tabindex="0">
+                        <div class="stat-icon distance" aria-hidden="true">
                             <i class="fas fa-road"></i>
                         </div>
                         <div class="stat-info">
                             <h3>Quilômetros</h3>
-                            <p class="stat-value">0 km</p>
-                            <span class="stat-change">Atualizado em tempo real</span>
+                            <p class="stat-value" id="km-dia">0 km</p>
+                            <span class="stat-change neutral">Atualizado em tempo real</span>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
+                    <div class="stat-card" tabindex="0">
+                        <div class="stat-icon fuel" aria-hidden="true">
                             <i class="fas fa-gas-pump"></i>
                         </div>
                         <div class="stat-info">
                             <h3>Combustível</h3>
-                            <p class="stat-value">R$ 0,00</p>
-                            <span class="stat-change">Atualizado em tempo real</span>
+                            <p class="stat-value" id="combustivel-dia">R$ 0,00</p>
+                            <span class="stat-change neutral">Atualizado em tempo real</span>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
+                    <div class="stat-card" tabindex="0">
+                        <div class="stat-icon time" aria-hidden="true">
                             <i class="fas fa-clock"></i>
                         </div>
                         <div class="stat-info">
                             <h3>Tempo Online</h3>
-                            <p class="stat-value">0h 0m</p>
-                            <span class="stat-change">Atualizado em tempo real</span>
+                            <p class="stat-value" id="tempo-dia">0h 0m</p>
+                            <span class="stat-change neutral">Atualizado em tempo real</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="charts-grid">
+                <div class="charts-grid" role="region" aria-label="Gráficos de desempenho">
                     <div class="chart-card">
-                        <h3>Ganhos dos Últimos 7 Dias</h3>
-                        <canvas id="ganhosChart"></canvas>
+                        <div class="chart-header">
+                            <h3>Ganhos dos Últimos 7 Dias</h3>
+                            <div class="chart-controls">
+                                <button class="chart-btn" data-period="7" aria-pressed="true">7 dias</button>
+                                <button class="chart-btn" data-period="30">30 dias</button>
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="ganhosChart" aria-label="Gráfico de ganhos dos últimos dias"></canvas>
+                        </div>
                     </div>
                     <div class="chart-card">
-                        <h3>Distribuição de Gastos</h3>
-                        <canvas id="gastosChart"></canvas>
+                        <div class="chart-header">
+                            <h3>Distribuição de Gastos</h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="gastosChart" aria-label="Gráfico de distribuição de gastos"></canvas>
+                        </div>
                     </div>
                 </div>
             </section>
 
-            <section id="calculadora" class="calculator-section">
+            <section id="calculadora" class="calculator-section" aria-labelledby="calc-title">
                 <div class="calculator-card">
-                    <h2>Calculadora Rápida</h2>
-                    <form id="quick-calc">
-                        <div class="input-group">
-                            <label for="carro">Selecione seu carro</label>
-                            <select id="carro" class="form-control" required>
-                                <option value="">Selecione um carro</option>
-                                <option value="11.5">Renault Sandero</option>
-                                <option value="11.8">Volkswagen Gol</option>
-                                <option value="12.5">Chevrolet Onix</option>
-                                <option value="11.7">Hyundai HB20</option>
-                                <option value="11.6">Fiat Argo</option>
-                                <option value="12.3">Ford Ka Sedan</option>
-                                <option value="11.5">Nissan Versa</option>
-                                <option value="13.0">Toyota Yaris</option>
-                                <option value="11.5">Hyundai HB20S</option>
-                                <option value="6.5">BYD Dolphin (elétrico)</option>
-                                <option value="13.5">Volkswagen Up</option>
-                            </select>
+                    <div class="section-header">
+                        <h2 id="calc-title">Calculadora Rápida</h2>
+                        <p class="section-subtitle">Calcule seus ganhos líquidos com precisão</p>
+                    </div>
+                    
+                    <form id="quick-calc" novalidate>
+                        <div class="form-grid">
+                            <div class="input-group">
+                                <label for="carro">Selecione seu carro *</label>
+                                <select id="carro" class="form-control" required aria-describedby="carro-calc-error">
+                                    <option value="">Selecione um carro</option>
+                                    <optgroup label="Carros Populares">
+                                        <option value="11.5">Renault Sandero (11.5 km/L)</option>
+                                        <option value="11.8">Volkswagen Gol (11.8 km/L)</option>
+                                        <option value="12.5">Chevrolet Onix (12.5 km/L)</option>
+                                        <option value="11.7">Hyundai HB20 (11.7 km/L)</option>
+                                        <option value="11.6">Fiat Argo (11.6 km/L)</option>
+                                    </optgroup>
+                                    <optgroup label="Sedans">
+                                        <option value="12.3">Ford Ka Sedan (12.3 km/L)</option>
+                                        <option value="11.5">Nissan Versa (11.5 km/L)</option>
+                                        <option value="11.5">Hyundai HB20S (11.5 km/L)</option>
+                                    </optgroup>
+                                    <optgroup label="Econômicos">
+                                        <option value="13.0">Toyota Yaris (13.0 km/L)</option>
+                                        <option value="13.5">Volkswagen Up (13.5 km/L)</option>
+                                    </optgroup>
+                                    <optgroup label="Elétricos">
+                                        <option value="6.5">BYD Dolphin (6.5 km/kWh)</option>
+                                    </optgroup>
+                                </select>
+                                <span id="carro-calc-error" class="error-message" role="alert"></span>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="kmL">Consumo de combustível (KM/L) *</label>
+                                <input type="number" id="kmL" step="0.1" min="1" max="50" placeholder="0.0" 
+                                       aria-describedby="kml-help kml-error" required>
+                                <small id="kml-help">Este valor é preenchido automaticamente ao selecionar um carro</small>
+                                <span id="kml-error" class="error-message" role="alert"></span>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="ganhos">Ganhos Brutos (R$) *</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">R$</span>
+                                    <input type="number" id="ganhos" step="0.01" min="0" placeholder="0.00" 
+                                           aria-describedby="ganhos-error" required>
+                                </div>
+                                <span id="ganhos-error" class="error-message" role="alert"></span>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="km">Quilômetros Rodados *</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="km" step="0.1" min="0" placeholder="0.0" 
+                                           aria-describedby="km-error" required>
+                                    <span class="input-suffix">km</span>
+                                </div>
+                                <span id="km-error" class="error-message" role="alert"></span>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="combustivel">Preço do Combustível (R$/L) *</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">R$</span>
+                                    <input type="number" id="combustivel" step="0.01" min="0" placeholder="0.00" 
+                                           aria-describedby="combustivel-error" required>
+                                </div>
+                                <span id="combustivel-error" class="error-message" role="alert"></span>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="manutencao">Manutenção e Desgaste (%)</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="manutencao" step="0.01" value="18" min="0" max="100" 
+                                           aria-describedby="manutencao-help">
+                                    <span class="input-suffix">%</span>
+                                </div>
+                                <small id="manutencao-help">Valor padrão de 18%, podendo ser alterado conforme necessário</small>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="outros-gastos">Outros Gastos (R$)</label>
+                                <div class="input-with-icon">
+                                    <span class="input-icon">R$</span>
+                                    <input type="number" id="outros-gastos" step="0.01" min="0" placeholder="0.00" 
+                                           aria-describedby="outros-help">
+                                </div>
+                                <small id="outros-help">Inclua aqui outros gastos como alimentação, estacionamento, etc.</small>
+                            </div>
+
+                            <div class="input-group">
+                                <label for="tempo-online">Tempo Online (horas) *</label>
+                                <div class="input-with-icon">
+                                    <input type="number" id="tempo-online" step="0.5" min="0" placeholder="0.0" 
+                                           aria-describedby="tempo-error" required>
+                                    <span class="input-suffix">h</span>
+                                </div>
+                                <small>Quantas horas você ficou disponível no aplicativo</small>
+                                <span id="tempo-error" class="error-message" role="alert"></span>
+                            </div>
                         </div>
-                        <div class="input-group">
-                            <label for="kmL">Consumo de combustível (KM/L)</label>
-                            <input type="number" id="kmL" step="0.1" placeholder="0.0">
-                            <small>Este valor será preenchido automaticamente ao selecionar um carro, mas pode ser editado manualmente</small>
+
+                        <div class="form-actions">
+                            <button type="button" class="secondary-btn" id="limpar-form">
+                                <i class="fas fa-eraser" aria-hidden="true"></i>
+                                <span>Limpar</span>
+                            </button>
+                            <button type="submit" class="calculate-btn">
+                                <i class="fas fa-calculator" aria-hidden="true"></i>
+                                <span>Calcular</span>
+                            </button>
                         </div>
-                        <div class="input-group">
-                            <label for="ganhos">Ganhos Brutos (R$)</label>
-                            <input type="number" id="ganhos" step="0.01" placeholder="0.00">
-                        </div>
-                        <div class="input-group">
-                            <label for="km">Quilômetros Rodados</label>
-                            <input type="number" id="km" step="0.1" placeholder="0.0">
-                        </div>
-                        <div class="input-group">
-                            <label for="combustivel">Preço do Combustível (R$/L)</label>
-                            <input type="number" id="combustivel" step="0.01" placeholder="0.00">
-                        </div>
-                        <div class="input-group">
-                            <label for="manutencao">Manutenção e Desgaste (%)</label>
-                            <input type="number" id="manutencao" step="0.01" value="18" min="0" max="100">
-                            <small><i>Valor padrão de 18%, podendo ser alterado conforme necessário</i></small>
-                        </div>
-                        <div class="input-group">
-                            <label for="outros-gastos">Outros Gastos (R$)</label>
-                            <input type="number" id="outros-gastos" step="0.01" placeholder="0.00">
-                            <small><i>Inclua aqui outros gastos como alimentação, estacionamento, etc.</i></small>
-                        </div>
-                        <div class="input-group">
-                            <label for="tempo-online">Tempo Online (horas)</label>
-                            <input type="number" id="tempo-online" step="0.5" min="0" placeholder="0.0">
-                            <small><i>Quantas horas você ficou disponível no aplicativo</i></small>
-                        </div>
-                        <button type="submit" class="calculate-btn">
-                            <i class="fas fa-calculator"></i>
-                            Calcular
-                        </button>
                     </form>
                 </div>
             </section>
 
-            <section id="configuracoes" class="settings-section">
+            <section id="historico" class="history-section" aria-labelledby="history-title">
+                <div class="history-card">
+                    <div class="section-header">
+                        <h2 id="history-title">Histórico de Cálculos</h2>
+                        <div class="history-actions">
+                            <button class="secondary-btn" id="limpar-historico">
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                <span>Limpar Histórico</span>
+                            </button>
+                            <button class="primary-btn" id="exportar-historico">
+                                <i class="fas fa-download" aria-hidden="true"></i>
+                                <span>Exportar</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="history-content">
+                        <div class="no-data" id="no-history">
+                            <i class="fas fa-history" aria-hidden="true"></i>
+                            <h3>Nenhum cálculo registrado</h3>
+                            <p>Seus cálculos aparecerão aqui após serem realizados</p>
+                        </div>
+                        <div class="history-list" id="history-list" style="display: none;">
+                            <!-- Histórico será inserido aqui via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="configuracoes" class="settings-section" aria-labelledby="settings-title">
                 <div class="settings-card">
-                    <h2>Configurações</h2>
+                    <div class="section-header">
+                        <h2 id="settings-title">Configurações</h2>
+                    </div>
                     <div class="settings-content">
                         <div class="settings-group">
-                            <h3>Sobre o DriveCalc</h3>
-                            <div class="version-info">
-                                <span class="version-label">Versão:</span>
-                                <span class="version-value">1.0 (BETA)</span>
+                            <h3>Perfil do Usuário</h3>
+                            <div class="profile-settings">
+                                <div class="input-group">
+                                    <label for="user-name-setting">Nome</label>
+                                    <input type="text" id="user-name-setting" placeholder="Seu nome">
+                                </div>
+                                <div class="input-group">
+                                    <label for="user-car-setting">Veículo Principal</label>
+                                    <select id="user-car-setting">
+                                        <option value="">Selecione um carro</option>
+                                        <!-- Opções serão preenchidas via JavaScript -->
+                                    </select>
+                                </div>
+                                <button class="primary-btn" id="save-profile">
+                                    <i class="fas fa-save" aria-hidden="true"></i>
+                                    <span>Salvar Perfil</span>
+                                </button>
                             </div>
                         </div>
                         
                         <div class="settings-group">
-                            <h3>Contato</h3>
+                            <h3>Sobre o DriveCalc</h3>
+                            <div class="version-info">
+                                <div class="info-item">
+                                    <span class="info-label">Versão:</span>
+                                    <span class="version-value">2.0 (BETA)</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Última atualização:</span>
+                                    <span>Dezembro 2024</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-group">
+                            <h3>Contato e Suporte</h3>
                             <div class="contact-info">
                                 <div class="contact-item">
-                                    <i class="fas fa-envelope"></i>
+                                    <i class="fas fa-envelope" aria-hidden="true"></i>
                                     <span>leosmrosa@gmail.com</span>
                                 </div>
                                 <div class="contact-item">
-                                    <i class="fas fa-headset"></i>
+                                    <i class="fas fa-headset" aria-hidden="true"></i>
                                     <span>Suporte:</span>
-                                    <a href="https://wa.me/5547997190249" class="whatsapp-support" target="_blank">
-                                        <i class="fab fa-whatsapp"></i>
-                                        WhatsApp
+                                    <a href="https://wa.me/5547997190249" class="whatsapp-support" target="_blank" rel="noopener">
+                                        <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                                        <span>WhatsApp</span>
                                     </a>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="settings-group">
+                            <h3>Dados e Privacidade</h3>
+                            <div class="privacy-settings">
+                                <button class="danger-btn" id="reset-data">
+                                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                                    <span>Resetar Todos os Dados</span>
+                                </button>
+                                <small>Esta ação não pode ser desfeita</small>
                             </div>
                         </div>
                     </div>
@@ -249,12 +454,12 @@
     </div>
 
     <!-- Modal de Resultados -->
-    <div id="resultado-modal" class="modal">
+    <div id="resultado-modal" class="modal" role="dialog" aria-labelledby="resultado-title" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Resultado do Cálculo</h3>
-                <button class="close-modal">
-                    <i class="fas fa-times"></i>
+                <h3 id="resultado-title">Resultado do Cálculo</h3>
+                <button class="close-modal" aria-label="Fechar modal">
+                    <i class="fas fa-times" aria-hidden="true"></i>
                 </button>
             </div>
             <div class="modal-body">
@@ -265,18 +470,24 @@
             <div class="modal-footer">
                 <div class="modal-actions">
                     <button class="action-btn whatsapp-btn">
-                        <i class="fab fa-whatsapp"></i>
-                        WhatsApp
+                        <i class="fab fa-whatsapp" aria-hidden="true"></i>
+                        <span>WhatsApp</span>
                     </button>
                     <button class="action-btn pdf-btn">
-                        <i class="fas fa-file-pdf"></i>
-                        Baixar PDF
+                        <i class="fas fa-file-pdf" aria-hidden="true"></i>
+                        <span>Baixar PDF</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notifications -->
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true">
+        <!-- Toasts serão inseridos aqui via JavaScript -->
+    </div>
+
     <script src="script.js"></script>
 </body>
-</html> 
+</html>
+
