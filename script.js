@@ -2323,13 +2323,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Event Listeners ---
     function setupEventListeners() {
-        if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', () => {
-                const isOpened = sidebar.classList.toggle('open');
-                mobileMenuToggle.setAttribute('aria-expanded', isOpened);
-            });
-        }
-
         menuItems.forEach(item => {
             item.addEventListener('click', (e) => {
                 e.preventDefault();
