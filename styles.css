@@ -394,7 +394,7 @@ textarea:focus {
     position: fixed;
     top: var(--spacing-lg);
     left: var(--spacing-lg);
-    z-index: var(--z-fixed);
+    z-index: calc(var(--z-modal) + 1);
     background: var(--card-background);
     border: none;
     border-radius: var(--border-radius-lg);
@@ -440,16 +440,17 @@ textarea:focus {
 .sidebar {
     width: var(--sidebar-width);
     background: var(--card-gradient);
+    color: var(--text-primary);
     backdrop-filter: blur(20px);
     border-right: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
     position: fixed;
-    height: 100vh;
+    height: 100%;
     left: 0;
     top: 0;
-    z-index: var(--z-fixed);
+    z-index: var(--z-modal);
     transition: var(--transition);
+    display: flex;
+    flex-direction: column;
     box-shadow: var(--shadow-xl);
 }
 
@@ -945,15 +946,14 @@ textarea:focus {
 
 .chart-btn[aria-pressed="true"],
 .chart-btn:hover {
-    background: var(--card-background);
-    color: var(--text-primary);
-    box-shadow: var(--shadow-sm);
+    background: var(--primary-light);
+    color: var(--text-light);
 }
 
 .chart-container {
     position: relative;
-    height: 300px;
-    width: 100%;
+    height: 280px;
+    padding: var(--spacing-sm);
 }
 
 /* Responsividade Moderna */
@@ -961,23 +961,19 @@ textarea:focus {
     .charts-grid {
         grid-template-columns: 1fr;
     }
-    
-    .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    }
-}
 
-@media (max-width: 768px) {
     .mobile-menu-toggle {
         display: flex;
     }
     
     .sidebar {
         transform: translateX(-100%);
+        box-shadow: none;
     }
     
     .sidebar.open {
         transform: translateX(0);
+        box-shadow: var(--shadow-xl);
     }
     
     .main-content {
@@ -1399,6 +1395,7 @@ button:active {
     background: var(--card-gradient);
     backdrop-filter: blur(20px);
     border: 1px solid var(--border-color);
+    color: var(--text-primary) !important;
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-lg);
     box-shadow: var(--shadow-xl);
@@ -1604,11 +1601,6 @@ button:active {
     margin-bottom: var(--spacing-xs);
 }
 
-.setting-description {
-    font-size: var(--font-size-sm);
-    color: var(--text-secondary);
-}
-
 /* Toggle Switch Moderno */
 .toggle-switch {
     position: relative;
@@ -1812,3 +1804,78 @@ button:active {
     }
 }
 
+/* Estilos para o menu dropdown do perfil */
+.profile-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 220px;
+    background: var(--card-background);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border-color);
+    z-index: var(--z-dropdown);
+    overflow: hidden;
+    transform-origin: top right;
+    transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+.profile-dropdown ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.profile-dropdown li {
+    list-style: none;
+}
+
+.profile-dropdown li button {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    width: 100%;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.profile-dropdown li button:hover {
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+}
+
+.profile-dropdown li button i {
+    width: 20px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.profile-dropdown li button:hover i {
+    color: var(--primary-light);
+}
+
+.dropdown-header {
+    padding: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.dropdown-profile-photo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+#dropdown-user-name {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}

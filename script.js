@@ -174,6 +174,9 @@ class DriveCalc {
             if (userData) {
                 Object.assign(this.userData, userData);
                 this.updateUserGreeting();
+                if (userData.profilePhoto) {
+                    this.updateProfilePictures(userData.profilePhoto);
+                }
             }
         } catch (error) {
             console.error('Erro ao carregar configurações:', error);
@@ -183,7 +186,8 @@ class DriveCalc {
     // Atualizar saudação do usuário
     updateUserGreeting() {
         const greetingElement = document.getElementById('user-greeting');
-        if (greetingElement && this.userData.nome) {
+        const dropdownUserName = document.getElementById('dropdown-user-name');
+        if (this.userData.nome) {
             const hour = new Date().getHours();
             let greeting = 'Olá';
             
@@ -191,7 +195,9 @@ class DriveCalc {
             else if (hour < 18) greeting = 'Boa tarde';
             else greeting = 'Boa noite';
             
-            greetingElement.textContent = `${greeting}, ${this.userData.nome.split(' ')[0]}`;
+            const firstName = this.userData.nome.split(' ')[0];
+            if (greetingElement) greetingElement.textContent = `${greeting}, ${firstName}`;
+            if (dropdownUserName) dropdownUserName.textContent = this.userData.nome;
         }
     }
 
@@ -275,6 +281,9 @@ class DriveCalc {
             carSelect.addEventListener('change', (e) => this.handleCarSelection(e));
         }
 
+        // Inicializar data atual no campo de data
+        this.initializeDateField();
+
         // Botões de ação
         this.bindActionButtons();
 
@@ -289,29 +298,38 @@ class DriveCalc {
 
         // Auto-save nos inputs
         this.bindAutoSave();
+
+        // Fechar sidebar ao clicar fora (em mobile)
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                    mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
     }
 
     // Bind de botões de ação
     bindActionButtons() {
-        const clearFormBtn = document.getElementById('clear-form');
-        if (clearFormBtn) {
-            clearFormBtn.addEventListener('click', () => this.clearForm());
-        }
+        // Limpar formulário
+        document.getElementById('clear-form')?.addEventListener('click', () => this.clearForm());
 
-        const saveCalcBtn = document.getElementById('save-calc');
-        if (saveCalcBtn) {
-            saveCalcBtn.addEventListener('click', () => this.saveCalculation());
-        }
+        // Salvar cálculo
+        document.getElementById('save-calc')?.addEventListener('click', () => this.saveCalculation());
 
-        const exportBtn = document.querySelector('.export-btn');
-        if (exportBtn) {
-            exportBtn.addEventListener('click', () => this.exportToPDF());
-        }
+        // Limpar histórico
+        document.getElementById('clear-history')?.addEventListener('click', () => this.clearHistory());
 
-        const clearHistoryBtn = document.getElementById('clear-history');
-        if (clearHistoryBtn) {
-            clearHistoryBtn.addEventListener('click', () => this.clearHistory());
-        }
+        // Exportar PDF (Dashboard)
+        document.querySelector('.export-btn')?.addEventListener('click', () => {
+            this.showToast('Função disponível em breve', 'info');
+        });
+
+        // Baixar Relatório (Relatórios)
+        document.getElementById('download-report-btn')?.addEventListener('click', () => {
+            this.showToast('Função disponível em breve', 'info');
+        });
     }
 
     // Bind de controles de gráfico
@@ -338,6 +356,39 @@ class DriveCalc {
         if (clearAllDataBtn) {
             clearAllDataBtn.addEventListener('click', () => this.clearAllData());
         }
+
+        // Upload de foto de perfil
+        const userProfile = document.querySelector('.user-profile');
+        if (userProfile) {
+            userProfile.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleProfileDropdown();
+            });
+        }
+
+        // Botões do dropdown
+        const changePhotoBtn = document.getElementById('change-photo-btn');
+        if (changePhotoBtn) {
+            changePhotoBtn.addEventListener('click', () => {
+                document.getElementById('photo-upload-input').click();
+                this.toggleProfileDropdown(false); // Fechar dropdown
+            });
+        }
+
+        const signOutBtn = document.getElementById('sign-out-btn');
+        if (signOutBtn) {
+            signOutBtn.addEventListener('click', () => this.signOut());
+        }
+
+        const photoUploadInput = document.getElementById('photo-upload-input');
+        if (photoUploadInput) {
+            photoUploadInput.addEventListener('change', (e) => this.handlePhotoUpload(e));
+        }
+
+        // Fechar dropdown ao clicar fora
+        window.addEventListener('click', () => {
+            this.toggleProfileDropdown(false);
+        });
     }
 
     // Bind de eventos de teclado
@@ -507,12 +558,14 @@ class DriveCalc {
         
         overlay.addEventListener('click', () => this.closeMobileMenu());
         document.body.appendChild(overlay);
+        document.body.style.overflow = 'hidden';
     }
 
     removeMobileOverlay() {
         const overlay = document.querySelector('.mobile-overlay');
         if (overlay) {
             overlay.remove();
+            document.body.style.overflow = '';
         }
     }
 
@@ -564,6 +617,16 @@ class DriveCalc {
         if (carSelect && this.userData.veiculoPadrao) {
             carSelect.value = this.userData.veiculoPadrao;
             carSelect.dispatchEvent(new Event('change'));
+        }
+    }
+
+    // Inicializar campo de data com a data atual
+    initializeDateField() {
+        const dateInput = document.getElementById('dataGanho');
+        if (dateInput) {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+            dateInput.value = formattedDate;
         }
     }
 
@@ -638,6 +701,7 @@ class DriveCalc {
             ganhos: parseFloat(document.getElementById('ganhos').value) || 0,
             km: parseFloat(document.getElementById('km').value) || 0,
             precoCombustivel: parseFloat(document.getElementById('precoCombustivel').value) || 0,
+            dataGanho: document.getElementById('dataGanho').value,
             manutencao: parseFloat(document.getElementById('manutencao').value) || this.config.defaultManutencao
         };
     }
@@ -664,6 +728,18 @@ class DriveCalc {
         
         if (data.precoCombustivel <= 0) {
             errors.push({ field: 'precoCombustivel', message: 'Preço do combustível deve ser maior que 0' });
+        }
+        
+        if (!data.dataGanho) {
+            errors.push({ field: 'dataGanho', message: 'Selecione a data do ganho' });
+        } else {
+            const selectedDate = new Date(data.dataGanho);
+            const today = new Date();
+            today.setHours(23, 59, 59, 999); // Fim do dia atual
+            
+            if (selectedDate > today) {
+                errors.push({ field: 'dataGanho', message: 'A data não pode ser futura' });
+            }
         }
         
         if (data.manutencao < 0 || data.manutencao > 100) {
@@ -934,10 +1010,14 @@ class DriveCalc {
     // Salvar cálculo no histórico
     async saveCalculationToHistory(formData, results) {
         try {
+            // Usar a data selecionada pelo usuário ou a data atual
+            const dataCalculo = formData.dataGanho ? new Date(formData.dataGanho + 'T12:00:00').toISOString() : new Date().toISOString();
+            
             const calculation = {
                 ...results,
                 id: Date.now(),
-                data: new Date().toISOString(),
+                data: dataCalculo,
+                dataOriginal: formData.dataGanho, // Manter a data original para referência
                 veiculo: this.getCarName(formData.carro),
                 ...formData
             };
@@ -1272,7 +1352,13 @@ class DriveCalc {
                         }
                     }
                 },
-                cutout: '60%'
+                cutout: '60%',
+                layout: {
+                    padding: {
+                        top: 10,
+                        bottom: 10
+                    }
+                }
             }
         };
         
@@ -1322,15 +1408,15 @@ class DriveCalc {
             date.setDate(date.getDate() - i);
             
             const dayName = date.toLocaleDateString('pt-BR', { weekday: 'short' });
+            const dateStr = date.toISOString().split('T')[0];
             labels.push(dayName);
             
-            // Calcular ganhos do dia baseado no histórico
+            // Calcular ganhos do dia baseado na data original
             const dayCalculations = this.calculations.filter(calc => {
-                const calcDate = new Date(calc.data);
-                return calcDate.toDateString() === date.toDateString();
+                return calc.dataOriginal === dateStr;
             });
             
-            const dayTotal = dayCalculations.reduce((sum, calc) => sum + calc.ganhoLiquido, 0);
+            const dayTotal = dayCalculations.reduce((sum, calc) => sum + (calc.ganhoLiquido || 0), 0);
             values.push(dayTotal);
         }
         
@@ -1390,28 +1476,33 @@ class DriveCalc {
 
     updateDashboardStats() {
         const today = new Date();
+        const todayStr = today.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        
+        // Filtrar cálculos do dia atual baseado na data original selecionada
         const todayCalculations = this.calculations.filter(calc => {
-            const calcDate = new Date(calc.data);
-            return calcDate.toDateString() === today.toDateString();
+            return calc.dataOriginal === todayStr;
         });
         
         const todayStats = todayCalculations.reduce((stats, calc) => {
-            stats.ganhos += calc.ganhoLiquido;
-            stats.km += calc.km;
-            stats.combustivel += calc.gastoCombustivel;
+            stats.ganhos += calc.ganhoLiquido || 0;
+            stats.km += calc.km || 0;
+            stats.combustivel += calc.gastoCombustivel || 0;
             return stats;
         }, { ganhos: 0, km: 0, combustivel: 0 });
         
-        // Atualizar elementos do dashboard
-        this.updateElement('ganhos-dia', this.formatCurrency(todayStats.ganhos));
-        this.updateElement('km-dia', `${todayStats.km.toFixed(1)} km`);
-        this.updateElement('combustivel-dia', this.formatCurrency(todayStats.combustivel));
+        // Atualizar elementos do dashboard com animação
+        this.animateStatUpdate('ganhos-dia', todayStats.ganhos, 'currency');
+        this.animateStatUpdate('km-dia', todayStats.km, 'distance');
+        this.animateStatUpdate('combustivel-dia', todayStats.combustivel, 'currency');
         
-        // Calcular tempo online (simulado)
-        const horasOnline = todayCalculations.length * 0.5; // Estimativa
+        // Calcular tempo online baseado no número de cálculos
+        const horasOnline = todayCalculations.length * 0.75; // Estimativa melhorada
         const horas = Math.floor(horasOnline);
         const minutos = Math.round((horasOnline - horas) * 60);
         this.updateElement('tempo-dia', `${horas}h ${minutos}m`);
+        
+        // Atualizar indicadores de mudança
+        this.updateStatChanges(todayStats);
     }
 
     updateWeeklySummary() {
@@ -1425,15 +1516,28 @@ class DriveCalc {
             return;
         }
         
-        const totalSemana = weekCalculations.reduce((sum, calc) => sum + calc.ganhoLiquido, 0);
-        const mediaDia = totalSemana / 7;
-        const melhorDia = Math.max(...weekCalculations.map(calc => calc.ganhoLiquido));
-        const eficienciaMedia = weekCalculations.reduce((sum, calc) => sum + calc.margemLucro, 0) / weekCalculations.length;
+        const totalSemana = weekCalculations.reduce((sum, calc) => sum + (calc.ganhoLiquido || 0), 0);
+        const diasComGanhos = this.getDaysWithEarnings(weekCalculations);
+        const mediaDia = diasComGanhos > 0 ? totalSemana / diasComGanhos : 0;
+        const melhorDia = Math.max(...weekCalculations.map(calc => calc.ganhoLiquido || 0));
+        const eficienciaMedia = weekCalculations.length > 0 ? 
+            weekCalculations.reduce((sum, calc) => sum + (calc.margemLucro || 0), 0) / weekCalculations.length : 0;
         
-        this.updateElement('media-dia', this.formatCurrency(mediaDia));
-        this.updateElement('melhor-dia', this.formatCurrency(melhorDia));
-        this.updateElement('total-semana', this.formatCurrency(totalSemana));
+        // Atualizar com animação
+        this.animateStatUpdate('media-dia', mediaDia, 'currency');
+        this.animateStatUpdate('melhor-dia', melhorDia, 'currency');
+        this.animateStatUpdate('total-semana', totalSemana, 'currency');
         this.updateElement('eficiencia', `${eficienciaMedia.toFixed(1)}%`);
+    }
+
+    getDaysWithEarnings(calculations) {
+        const daysSet = new Set();
+        calculations.forEach(calc => {
+            if (calc.dataOriginal) {
+                daysSet.add(calc.dataOriginal);
+            }
+        });
+        return daysSet.size;
     }
 
     getWeekCalculations() {
@@ -1441,9 +1545,12 @@ class DriveCalc {
         const weekStart = new Date(today);
         weekStart.setDate(today.getDate() - today.getDay()); // Domingo
         
+        const todayStr = today.toISOString().split('T')[0];
+        const weekStartStr = weekStart.toISOString().split('T')[0];
+        
         return this.calculations.filter(calc => {
-            const calcDate = new Date(calc.data);
-            return calcDate >= weekStart && calcDate <= today;
+            if (!calc.dataOriginal) return false;
+            return calc.dataOriginal >= weekStartStr && calc.dataOriginal <= todayStr;
         });
     }
 
@@ -1451,6 +1558,105 @@ class DriveCalc {
         const element = document.getElementById(id);
         if (element) {
             element.textContent = value;
+        }
+    }
+
+    // Animar atualização de estatísticas
+    animateStatUpdate(elementId, finalValue, type = 'number') {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
+        const currentValue = this.parseCurrentValue(element.textContent, type);
+        const duration = 1000;
+        const startTime = performance.now();
+        
+        const animate = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+            const value = currentValue + (finalValue - currentValue) * easeOutQuart;
+            
+            switch (type) {
+                case 'currency':
+                    element.textContent = this.formatCurrency(value);
+                    break;
+                case 'distance':
+                    element.textContent = `${value.toFixed(1)} km`;
+                    break;
+                default:
+                    element.textContent = value.toFixed(2);
+            }
+            
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            }
+        };
+        
+        requestAnimationFrame(animate);
+    }
+
+    parseCurrentValue(text, type) {
+        if (!text) return 0;
+        
+        switch (type) {
+            case 'currency':
+                return parseFloat(text.replace(/[R$\s.,]/g, '').replace(',', '.')) || 0;
+            case 'distance':
+                return parseFloat(text.replace(/[km\s]/g, '')) || 0;
+            default:
+                return parseFloat(text) || 0;
+        }
+    }
+
+    // Atualizar indicadores de mudança
+    updateStatChanges(todayStats) {
+        // Comparar com ontem
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        
+        const yesterdayCalculations = this.calculations.filter(calc => {
+            return calc.dataOriginal === yesterdayStr;
+        });
+        
+        const yesterdayStats = yesterdayCalculations.reduce((stats, calc) => {
+            stats.ganhos += calc.ganhoLiquido || 0;
+            stats.km += calc.km || 0;
+            stats.combustivel += calc.gastoCombustivel || 0;
+            return stats;
+        }, { ganhos: 0, km: 0, combustivel: 0 });
+        
+        // Atualizar indicadores
+        this.updateChangeIndicator('ganhos-dia', todayStats.ganhos, yesterdayStats.ganhos);
+        this.updateChangeIndicator('km-dia', todayStats.km, yesterdayStats.km);
+        this.updateChangeIndicator('combustivel-dia', todayStats.combustivel, yesterdayStats.combustivel);
+    }
+
+    updateChangeIndicator(statId, currentValue, previousValue) {
+        const statCard = document.querySelector(`#${statId}`).closest('.stat-card');
+        const changeElement = statCard?.querySelector('.stat-change');
+        
+        if (!changeElement) return;
+        
+        if (previousValue === 0) {
+            changeElement.textContent = 'Primeiro registro';
+            changeElement.className = 'stat-change neutral';
+            return;
+        }
+        
+        const change = ((currentValue - previousValue) / previousValue) * 100;
+        const changeText = `${change >= 0 ? '+' : ''}${change.toFixed(1)}% vs ontem`;
+        
+        changeElement.textContent = changeText;
+        
+        if (change > 5) {
+            changeElement.className = 'stat-change positive';
+        } else if (change < -5) {
+            changeElement.className = 'stat-change negative';
+        } else {
+            changeElement.className = 'stat-change neutral';
         }
     }
 
@@ -1531,6 +1737,12 @@ class DriveCalc {
         this.updateToggle('notifications-toggle', this.config.notifications);
         this.updateToggle('auto-save-toggle', this.config.autoSave);
         this.updateToggle('dark-mode-toggle', false); // Modo escuro ainda não implementado
+        
+        // Carregar foto de perfil
+        const settingsProfileImg = document.getElementById('settings-profile-img');
+        if (settingsProfileImg) {
+            settingsProfileImg.src = this.userData.profilePhoto || 'https://i.ibb.co/7CXZgN7/user.png';
+        }
     }
 
     populateCarOptions(selectElement) {
@@ -1652,7 +1864,8 @@ class DriveCalc {
                 gastoCombustivel: 0,
                 tempoOnline: 0,
                 nome: '',
-                veiculoPadrao: ''
+                veiculoPadrao: '',
+                profilePhoto: null
             };
             
             // Recarregar página
@@ -1840,9 +2053,170 @@ class DriveCalc {
         }).format(value);
     }
 
+    // Função para mostrar notificações toast
+    showToast(message, type = 'info') {
+        // Criar elemento toast se não existir
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            `;
+            document.body.appendChild(toastContainer);
+        }
+
+        // Criar toast
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.style.cssText = `
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        `;
+
+        // Definir cores baseadas no tipo
+        const colors = {
+            success: '#10b981',
+            error: '#ef4444',
+            warning: '#f59e0b',
+            info: '#3b82f6'
+        };
+        toast.style.backgroundColor = colors[type] || colors.info;
+
+        // Adicionar ícone
+        const icons = {
+            success: 'fas fa-check-circle',
+            error: 'fas fa-exclamation-circle',
+            warning: 'fas fa-exclamation-triangle',
+            info: 'fas fa-info-circle'
+        };
+        const icon = document.createElement('i');
+        icon.className = icons[type] || icons.info;
+        toast.appendChild(icon);
+
+        // Adicionar mensagem
+        const messageSpan = document.createElement('span');
+        messageSpan.textContent = message;
+        toast.appendChild(messageSpan);
+
+        // Adicionar ao container
+        toastContainer.appendChild(toast);
+
+        // Animar entrada
+        setTimeout(() => {
+            toast.style.transform = 'translateX(0)';
+        }, 10);
+
+        // Remover após 4 segundos
+        setTimeout(() => {
+            toast.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 300);
+        }, 4000);
+    }
+
     trackCalculation(results) {
         // Implementar analytics no futuro
         console.log('Cálculo realizado:', results);
+    }
+
+    // Manipulação do upload de foto
+    handlePhotoUpload(e) {
+        const file = e.target.files[0];
+        if (!file || !file.type.startsWith('image/')) {
+            this.showToast('Por favor, selecione um arquivo de imagem válido.', 'error');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const base64String = event.target.result;
+            
+            // Salvar no perfil do usuário
+            this.userData.profilePhoto = base64String;
+            this.saveUserData();
+
+            // Atualizar imagens na UI
+            this.updateProfilePictures(base64String);
+
+            this.showToast('Foto de perfil atualizada com sucesso!', 'success');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Atualizar todas as imagens de perfil
+    updateProfilePictures(base64String) {
+        const headerImg = document.getElementById('header-profile-img');
+        const dropdownImg = document.getElementById('dropdown-profile-img');
+        const headerIcon = document.getElementById('header-user-icon');
+
+        if (base64String) {
+            const photoUrl = base64String || 'https://i.ibb.co/7CXZgN7/user.png';
+            if (headerImg) {
+                headerImg.src = photoUrl;
+                headerImg.style.display = 'block';
+            }
+            if (headerIcon) {
+                headerIcon.style.display = 'none';
+            }
+            if (dropdownImg) {
+                dropdownImg.src = photoUrl;
+            }
+        }
+    }
+
+    // Toggle do menu de perfil
+    toggleProfileDropdown(forceShow) {
+        const dropdown = document.getElementById('profile-dropdown');
+        if (!dropdown) return;
+
+        const isVisible = dropdown.style.display === 'block';
+
+        if (forceShow === true) {
+            dropdown.style.display = 'block';
+        } else if (forceShow === false) {
+            dropdown.style.display = 'none';
+        } else {
+            dropdown.style.display = isVisible ? 'none' : 'block';
+        }
+    }
+
+    // Sair da conta
+    signOut() {
+        // Limpar dados locais
+        localStorage.removeItem('drivecalc_user');
+        
+        // Resetar dados em memória
+        this.userData = {
+            nome: '',
+            veiculoPadrao: '',
+            profilePhoto: null
+        };
+        
+        this.showToast('Você foi desconectado. Recarregando...', 'info');
+        
+        // Recarregar a página para voltar à tela de boas-vindas
+        setTimeout(() => {
+            window.location.reload();
+        }, 1500);
     }
 }
 
@@ -1860,8 +2234,349 @@ function debounce(func, wait) {
 }
 
 // Inicializar aplicação quando DOM estiver pronto
-document.addEventListener('DOMContentLoaded', () => {
-    window.driveCalc = new DriveCalc();
+document.addEventListener('DOMContentLoaded', function() {
+    // Seletores Modernos
+    const mobileMenuToggle = document.querySelector('.mobile-menu-toggle');
+    const sidebar = document.querySelector('.sidebar');
+    const menuItems = document.querySelectorAll('.sidebar nav a[data-section]');
+    const sections = document.querySelectorAll('.section');
+    const pageTitle = document.querySelector('.page-title');
+    const currentDateEl = document.getElementById('current-date');
+    const loadingScreen = document.getElementById('loading-screen');
+    const loadingProgress = document.querySelector('.loading-progress');
+    const saveCalcBtn = document.getElementById('save-calc');
+    const historyContent = document.getElementById('history-content');
+
+    // Variáveis de estado
+    let lastCalculation = null;
+    let db;
+
+    // --- Inicialização e Loading ---
+    async function init() {
+        // Simula o carregamento
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += 20;
+            loadingProgress.style.width = progress + '%';
+            if (progress >= 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    loadingScreen.classList.add('hidden');
+                }, 500);
+            }
+        }, 200);
+
+        setupEventListeners();
+        
+        // Exibe a data atual
+        if (currentDateEl) {
+            currentDateEl.textContent = new Date().toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        // Navega para a seção inicial (Dashboard)
+        navigateTo('dashboard');
+    }
+
+    // --- Navegação ---
+    function navigateTo(sectionId) {
+        let targetSection = null;
+
+        sections.forEach(section => {
+            if (section.id === sectionId) {
+                section.classList.add('active');
+                targetSection = section;
+            } else {
+                section.classList.remove('active');
+            }
+        });
+
+        menuItems.forEach(item => {
+            if (item.dataset.section === sectionId) {
+                item.parentElement.classList.add('active');
+                item.setAttribute('aria-current', 'page');
+            } else {
+                item.parentElement.classList.remove('active');
+                item.removeAttribute('aria-current');
+            }
+        });
+
+        if (targetSection) {
+            const title = targetSection.getAttribute('aria-labelledby') || sectionId;
+            const titleElement = document.getElementById(title);
+            pageTitle.textContent = titleElement ? titleElement.textContent : 'Dashboard';
+        }
+
+        if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+            sidebar.classList.remove('open');
+            mobileMenuToggle.setAttribute('aria-expanded', 'false');
+        }
+
+        if (sectionId === 'historico') {
+            renderHistory();
+        }
+    }
+
+    // --- Event Listeners ---
+    function setupEventListeners() {
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', () => {
+                const isOpened = sidebar.classList.toggle('open');
+                mobileMenuToggle.setAttribute('aria-expanded', isOpened);
+            });
+        }
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const sectionId = item.dataset.section;
+                navigateTo(sectionId);
+            });
+        });
+        
+        // Fechar sidebar ao clicar fora (em mobile)
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+                if (!sidebar.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+                    sidebar.classList.remove('open');
+                    mobileMenuToggle.setAttribute('aria-expanded', 'false');
+                }
+            }
+        });
+
+        // Lógica da Calculadora
+        const quickCalcForm = document.getElementById('quick-calc');
+        if (quickCalcForm) {
+            quickCalcForm.addEventListener('submit', handleCalculation);
+        }
+
+        const carroSelect = document.getElementById('carro');
+        const kmLInput = document.getElementById('kmL');
+        if (carroSelect && kmLInput) {
+            carroSelect.addEventListener('change', () => {
+                const selectedOption = carroSelect.options[carroSelect.selectedIndex];
+                kmLInput.value = selectedOption.value || '';
+            });
+        }
+        
+        // Botão Salvar
+        if(saveCalcBtn) {
+            saveCalcBtn.addEventListener('click', handleSave);
+        }
+    }
+
+    // --- Lógica da Calculadora ---
+    function handleCalculation(e) {
+        e.preventDefault();
+        
+        // Obter valores dos inputs
+        const ganhosBrutos = parseFloat(document.getElementById('ganhos').value) || 0;
+        const km = parseFloat(document.getElementById('km').value) || 0;
+        const precoCombustivel = parseFloat(document.getElementById('precoCombustivel').value) || 0;
+        const kmL = parseFloat(document.getElementById('kmL').value) || 0;
+        const tempoOnline = parseFloat(document.getElementById('tempo-online').value) || 0;
+        const manutencaoInput = document.getElementById('manutencao');
+        
+        // Regra da manutenção: 5% se vazio
+        const manutencaoPerc = manutencaoInput.value === '' ? 5 : parseFloat(manutencaoInput.value) || 0;
+
+        // Validação simples
+        if (ganhosBrutos <= 0 || km <= 0 || precoCombustivel <= 0 || kmL <= 0 || tempoOnline <= 0) {
+            // Pode-se implementar um sistema de alerta/toast aqui
+            alert('Por favor, preencha todos os campos obrigatórios com valores válidos.');
+            return;
+        }
+
+        // Cálculos
+        const gastoCombustivel = (km / kmL) * precoCombustivel;
+        const gastoManutencao = ganhosBrutos * (manutencaoPerc / 100);
+        const ganhoLiquido = ganhosBrutos - gastoCombustivel - gastoManutencao;
+        const ganhoPorHora = tempoOnline > 0 ? ganhoLiquido / tempoOnline : 0;
+        const ganhoPorKm = km > 0 ? ganhoLiquido / km : 0;
+        const margemLucro = ganhosBrutos > 0 ? (ganhoLiquido / ganhosBrutos) * 100 : 0;
+
+        lastCalculation = {
+            ganhosBrutos, km, precoCombustivel, kmL, tempoOnline, manutencaoPerc,
+            gastoCombustivel, gastoManutencao, ganhoLiquido, ganhoPorHora, ganhoPorKm, margemLucro,
+            data: new Date().toISOString()
+        };
+        
+        // Exibir resultados
+        document.getElementById('ganho-liquido').textContent = `R$ ${ganhoLiquido.toFixed(2)}`;
+        document.getElementById('gasto-combustivel').textContent = `R$ ${gastoCombustivel.toFixed(2)}`;
+        document.getElementById('gasto-manutencao').textContent = `R$ ${gastoManutencao.toFixed(2)}`;
+        document.getElementById('margem-lucro').textContent = `${margemLucro.toFixed(1)}%`;
+        document.getElementById('ganho-por-km').textContent = `R$ ${ganhoPorKm.toFixed(2)}`;
+        document.getElementById('ganho-por-hora').textContent = `R$ ${ganhoPorHora.toFixed(2)}`;
+
+        // Mostrar a seção de resultados e o botão de salvar
+        const resultsSection = document.getElementById('results-section');
+        if (resultsSection) {
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        if (saveCalcBtn) {
+            saveCalcBtn.style.display = 'inline-flex';
+        }
+    }
+
+    // --- Persistência e Atualização da UI ---
+    async function handleSave() {
+        if (!lastCalculation) return;
+
+        try {
+            await saveCalculationToDB(lastCalculation);
+            updateDashboardStats(lastCalculation);
+            await renderHistory();
+            showToast('Cálculo salvo com sucesso!', 'success');
+            
+            lastCalculation = null;
+            saveCalcBtn.style.display = 'none';
+        } catch (error) {
+            console.error('Erro ao salvar o cálculo:', error);
+            showToast('Erro ao salvar o cálculo.', 'error');
+        }
+    }
+    
+    async function initializeDashboard() {
+        const calculos = await getCalculationsFromDB();
+        const today = new Date().toISOString().slice(0, 10);
+        const todayCalculos = calculos.filter(c => c.data.startsWith(today));
+
+        const totals = todayCalculos.reduce((acc, calc) => {
+            acc.ganhosBrutos += calc.ganhosBrutos;
+            acc.km += calc.km;
+            acc.gastoCombustivel += calc.gastoCombustivel;
+            acc.tempoOnline += calc.tempoOnline * 60; // em minutos
+            return acc;
+        }, { ganhosBrutos: 0, km: 0, gastoCombustivel: 0, tempoOnline: 0 });
+
+        document.getElementById('ganhos-dia').textContent = `R$ ${totals.ganhosBrutos.toFixed(2).replace('.', ',')}`;
+        document.getElementById('km-dia').textContent = `${totals.km.toFixed(1).replace('.', ',')} km`;
+        document.getElementById('combustivel-dia').textContent = `R$ ${totals.gastoCombustivel.toFixed(2).replace('.', ',')}`;
+        
+        const horas = Math.floor(totals.tempoOnline / 60);
+        const minutos = Math.round(totals.tempoOnline % 60);
+        document.getElementById('tempo-dia').textContent = `${horas}h ${minutos}m`;
+    }
+
+    function updateDashboardStats(calc) {
+        const parseCurrency = (el) => parseFloat(el.textContent.replace('R$ ', '').replace(',', '.')) || 0;
+        const parseKm = (el) => parseFloat(el.textContent.replace(',', '.')) || 0;
+        const parseTime = (el) => {
+            const parts = el.textContent.split('h ');
+            return ((parseInt(parts[0], 10) || 0) * 60) + (parseInt(parts[1], 10) || 0);
+        };
+
+        const ganhosDiaEl = document.getElementById('ganhos-dia');
+        const kmDiaEl = document.getElementById('km-dia');
+        const combustivelDiaEl = document.getElementById('combustivel-dia');
+        const tempoDiaEl = document.getElementById('tempo-dia');
+
+        const currentGanhos = parseCurrency(ganhosDiaEl);
+        const currentKm = parseKm(kmDiaEl);
+        const currentCombustivel = parseCurrency(combustivelDiaEl);
+        const currentTempo = parseTime(tempoDiaEl);
+
+        ganhosDiaEl.textContent = `R$ ${(currentGanhos + calc.ganhosBrutos).toFixed(2).replace('.', ',')}`;
+        kmDiaEl.textContent = `${(currentKm + calc.km).toFixed(1).replace('.', ',')} km`;
+        combustivelDiaEl.textContent = `R$ ${(currentCombustivel + calc.gastoCombustivel).toFixed(2).replace('.', ',')}`;
+        
+        const novoTempoTotal = currentTempo + (calc.tempoOnline * 60);
+        const novasHoras = Math.floor(novoTempoTotal / 60);
+        const novosMinutos = Math.round(novoTempoTotal % 60);
+        tempoDiaEl.textContent = `${novasHoras}h ${novosMinutos}m`;
+    }
+
+    async function renderHistory() {
+        if (!historyContent) return;
+        const calculos = await getCalculationsFromDB();
+        calculos.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+        if (calculos.length === 0) {
+            historyContent.innerHTML = `<div class="history-card"><div style="text-align: center; padding: 3rem; color: var(--text-muted);"><i class="fas fa-history" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i><h3>Nenhum cálculo encontrado</h3><p>Os seus cálculos salvos aparecerão aqui.</p></div></div>`;
+            return;
+        }
+
+        historyContent.innerHTML = '';
+        calculos.forEach(calc => {
+            const date = new Date(calc.data);
+            const card = document.createElement('div');
+            card.className = 'history-card';
+            card.innerHTML = `
+                <div class="history-item">
+                    <div class="history-info">
+                        <div class="history-date">${date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+                        <div class="history-details">${calc.km.toFixed(1).replace('.',',')} km em ${calc.tempoOnline.toFixed(1).replace('.',',')}h | G/Bruto: R$ ${calc.ganhosBrutos.toFixed(2).replace('.',',')}</div>
+                    </div>
+                    <div class="history-value ${calc.ganhoLiquido >= 0 ? 'positive' : 'negative'}">R$ ${calc.ganhoLiquido.toFixed(2).replace('.',',')}</div>
+                </div>`;
+            historyContent.appendChild(card);
+        });
+    }
+
+    // --- Banco de Dados (IndexedDB) ---
+    // ... (initDB e saveCalculationToDB existentes) ...
+    function initDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open('DriveCalcDB_v2', 1);
+
+            request.onupgradeneeded = event => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('calculos')) {
+                    const store = db.createObjectStore('calculos', { keyPath: 'id', autoIncrement: true });
+                    store.createIndex('data', 'data', { unique: false });
+                }
+            };
+
+            request.onsuccess = event => {
+                db = event.target.result;
+                resolve();
+            };
+
+            request.onerror = event => {
+                console.error('Erro no IndexedDB:', event.target.error);
+                reject(event.target.error);
+            };
+        });
+    }
+
+    function saveCalculationToDB(data) {
+        return new Promise((resolve, reject) => {
+            if (!db) return reject('Banco de dados não inicializado.');
+            const transaction = db.transaction(['calculos'], 'readwrite');
+            const store = transaction.objectStore('calculos');
+            const request = store.add(data);
+
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    function getCalculationsFromDB() {
+        return new Promise((resolve, reject) => {
+            if (!db) return reject('Banco de dados não inicializado.');
+            const transaction = db.transaction(['calculos'], 'readonly');
+            const store = transaction.objectStore('calculos');
+            const request = store.getAll();
+            request.onsuccess = () => resolve(request.result || []);
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    // Inicializa a aplicação
+    init();
+
+    // Inicializar a classe DriveCalc
+    const driveCalc = new DriveCalc();
+
+    // O restante do código antigo (calculadora, etc.) precisará ser refatorado
+    // para funcionar com os novos elementos e a nova estrutura.
+    // Esta é apenas a correção inicial para o menu e a navegação.
 });
 
 // Registrar service worker (futuro)

@@ -122,29 +122,35 @@
                         </label>
                         <select id="carro-inicial" required aria-describedby="carro-error">
                             <option value="">Escolha seu veículo</option>
-                            <optgroup label="🚗 Carros Populares">
-                                <option value="11.5">Renault Sandero (11.5 km/L)</option>
-                                <option value="11.8">Volkswagen Gol (11.8 km/L)</option>
+                            <optgroup label="Chevrolet">
                                 <option value="12.5">Chevrolet Onix (12.5 km/L)</option>
-                                <option value="11.7">Hyundai HB20 (11.7 km/L)</option>
-                                <option value="11.6">Fiat Argo (11.6 km/L)</option>
-                                <option value="12.0">Ford Ka (12.0 km/L)</option>
-                            </optgroup>
-                            <optgroup label="🚙 Sedans">
-                                <option value="12.3">Ford Ka Sedan (12.3 km/L)</option>
-                                <option value="11.5">Nissan Versa (11.5 km/L)</option>
-                                <option value="11.5">Hyundai HB20S (11.5 km/L)</option>
                                 <option value="11.8">Chevrolet Prisma (11.8 km/L)</option>
                             </optgroup>
-                            <optgroup label="💚 Econômicos">
-                                <option value="13.0">Toyota Yaris (13.0 km/L)</option>
-                                <option value="13.5">Volkswagen Up (13.5 km/L)</option>
+                            <optgroup label="Fiat">
+                                <option value="11.6">Fiat Argo (11.6 km/L)</option>
                                 <option value="14.0">Fiat Mobi (14.0 km/L)</option>
                             </optgroup>
-                            <optgroup label="⚡ Elétricos/Híbridos">
-                                <option value="6.5">BYD Dolphin (6.5 km/kWh)</option>
-                                <option value="7.0">Nissan Leaf (7.0 km/kWh)</option>
-                                <option value="18.0">Toyota Prius (18.0 km/L)</option>
+                            <optgroup label="Renault">
+                                <option value="11.5">Renault Sandero (11.5 km/L)</option>
+                                <option value="15.3">Renault Kwid (15.3 km/L)</option>
+                            </optgroup>
+                            <optgroup label="Volkswagen">
+                                <option value="11.8">Volkswagen Gol (11.8 km/L)</option>
+                                <option value="13.5">Volkswagen Up (13.5 km/L)</option>
+                            </optgroup>
+                            <optgroup label="Ford">
+                                <option value="12.0">Ford Ka (12.0 km/L)</option>
+                                <option value="12.3">Ford Ka Sedan (12.3 km/L)</option>
+                            </optgroup>
+                            <optgroup label="Hyundai">
+                                <option value="11.7">Hyundai HB20 (11.7 km/L)</option>
+                                <option value="11.5">Hyundai HB20S (11.5 km/L)</option>
+                            </optgroup>
+                            <optgroup label="Nissan">
+                                <option value="11.5">Nissan Versa (11.5 km/L)</option>
+                            </optgroup>
+                            <optgroup label="Toyota">
+                                <option value="13.0">Toyota Yaris (13.0 km/L)</option>
                             </optgroup>
                         </select>
                         <span id="carro-error" class="error-message" role="alert"></span>
@@ -168,6 +174,8 @@
             </div>
         </div>
     </div>
+
+    <input type="file" id="photo-upload-input" accept="image/*" style="display:none;">
 
     <div class="app-container">
         <!-- Mobile Menu Toggle Melhorado -->
@@ -242,9 +250,30 @@
                     <div class="user-menu">
                         <div class="user-profile">
                             <div class="profile-icon" aria-hidden="true">
-                                <i class="fas fa-user"></i>
+                                <img id="header-profile-img" alt="Foto de perfil" style="display: none; width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                                <i id="header-user-icon" class="fas fa-user"></i>
                             </div>
                             <span id="user-greeting">Olá, Motorista</span>
+                        </div>
+                        <div id="profile-dropdown" class="profile-dropdown" style="display: none;">
+                            <div class="dropdown-header">
+                                <img id="dropdown-profile-img" class="dropdown-profile-photo" alt="Foto de perfil">
+                                <span id="dropdown-user-name">Motorista</span>
+                            </div>
+                            <ul>
+                                <li>
+                                    <button id="change-photo-btn">
+                                        <i class="fas fa-camera"></i>
+                                        <span>Trocar Foto</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button id="sign-out-btn">
+                                        <i class="fas fa-sign-out-alt"></i>
+                                        <span>Sair</span>
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
                     </div>
                 </div>
@@ -385,24 +414,35 @@
                                 </label>
                                 <select id="carro" class="form-control" required aria-describedby="carro-calc-error">
                                     <option value="">Selecione um veículo</option>
-                                    <optgroup label="🚗 Carros Populares">
-                                        <option value="11.5">Renault Sandero (11.5 km/L)</option>
-                                        <option value="11.8">Volkswagen Gol (11.8 km/L)</option>
+                                    <optgroup label="Chevrolet">
                                         <option value="12.5">Chevrolet Onix (12.5 km/L)</option>
-                                        <option value="11.7">Hyundai HB20 (11.7 km/L)</option>
+                                        <option value="11.8">Chevrolet Prisma (11.8 km/L)</option>
+                                    </optgroup>
+                                    <optgroup label="Fiat">
                                         <option value="11.6">Fiat Argo (11.6 km/L)</option>
+                                        <option value="14.0">Fiat Mobi (14.0 km/L)</option>
                                     </optgroup>
-                                    <optgroup label="🚙 Sedans">
-                                        <option value="12.3">Ford Ka Sedan (12.3 km/L)</option>
-                                        <option value="11.5">Nissan Versa (11.5 km/L)</option>
-                                        <option value="11.5">Hyundai HB20S (11.5 km/L)</option>
+                                    <optgroup label="Renault">
+                                        <option value="11.5">Renault Sandero (11.5 km/L)</option>
+                                        <option value="15.3">Renault Kwid (15.3 km/L)</option>
                                     </optgroup>
-                                    <optgroup label="💚 Econômicos">
-                                        <option value="13.0">Toyota Yaris (13.0 km/L)</option>
+                                    <optgroup label="Volkswagen">
+                                        <option value="11.8">Volkswagen Gol (11.8 km/L)</option>
                                         <option value="13.5">Volkswagen Up (13.5 km/L)</option>
                                     </optgroup>
-                                    <optgroup label="⚡ Elétricos">
-                                        <option value="6.5">BYD Dolphin (6.5 km/kWh)</option>
+                                    <optgroup label="Ford">
+                                        <option value="12.0">Ford Ka (12.0 km/L)</option>
+                                        <option value="12.3">Ford Ka Sedan (12.3 km/L)</option>
+                                    </optgroup>
+                                    <optgroup label="Hyundai">
+                                        <option value="11.7">Hyundai HB20 (11.7 km/L)</option>
+                                        <option value="11.5">Hyundai HB20S (11.5 km/L)</option>
+                                    </optgroup>
+                                    <optgroup label="Nissan">
+                                        <option value="11.5">Nissan Versa (11.5 km/L)</option>
+                                    </optgroup>
+                                    <optgroup label="Toyota">
+                                        <option value="13.0">Toyota Yaris (13.0 km/L)</option>
                                     </optgroup>
                                 </select>
                                 <span id="carro-calc-error" class="error-message" role="alert"></span>
@@ -462,6 +502,18 @@
                                 <span id="preco-error" class="error-message" role="alert"></span>
                             </div>
 
+                            <!-- Data do Ganho -->
+                            <div class="input-group">
+                                <label for="dataGanho">
+                                    <i class="fas fa-calendar-alt" style="margin-right: 0.5rem; color: #6366f1;"></i>
+                                    Data do Ganho *
+                                </label>
+                                <input type="date" id="dataGanho" class="form-control" 
+                                       aria-describedby="data-help data-error" required>
+                                <small id="data-help">Selecione a data em que os ganhos foram obtidos</small>
+                                <span id="data-error" class="error-message" role="alert"></span>
+                            </div>
+
                             <!-- Manutenção -->
                             <div class="input-group">
                                 <label for="manutencao">
@@ -473,7 +525,21 @@
                                            aria-describedby="manutencao-help">
                                     <span class="input-suffix">%</span>
                                 </div>
-                                <small id="manutencao-help">Recomendado: 2% á 5% dos ganhos brutos</small>
+                                <small id="manutencao-help">Padrão: 5% (se vazio).<br>Digite 0 se não desejar incluir.</small>
+                            </div>
+
+                            <!-- Tempo Online -->
+                            <div class="input-group">
+                                <label for="tempo-online">
+                                    <i class="fas fa-clock" style="margin-right: 0.5rem; color: #8b5cf6;"></i>
+                                    Tempo Online (horas) *
+                                </label>
+                                <div class="input-with-icon has-suffix">
+                                    <input type="number" id="tempo-online" step="0.1" min="0" placeholder="8.0" 
+                                           aria-describedby="tempo-error" required>
+                                    <span class="input-suffix">hrs</span>
+                                </div>
+                                <span id="tempo-error" class="error-message" role="alert"></span>
                             </div>
                         </div>
 
@@ -520,6 +586,10 @@
                             <div class="result-item">
                                 <div class="result-label">Ganho por KM</div>
                                 <div class="result-value" id="ganho-por-km">R$ 0,00</div>
+                            </div>
+                            <div class="result-item">
+                                <div class="result-label">Ganho por Hora</div>
+                                <div class="result-value" id="ganho-por-hora">R$ 0,00</div>
                             </div>
                             <div class="result-item">
                                 <div class="result-label">Eficiência</div>
@@ -596,7 +666,7 @@
                                 <div class="result-value" id="dias-trabalhados">0</div>
                             </div>
                         </div>
-                        <button class="btn btn-secondary" style="width: 100%;">
+                        <button id="download-report-btn" class="btn btn-secondary" style="width: 100%;">
                             <i class="fas fa-download"></i>
                             Baixar Relatório
                         </button>
@@ -717,4 +787,9 @@
     </script>
 </body>
 </html>
+
+
+
+
+
 
