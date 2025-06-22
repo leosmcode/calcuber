@@ -396,7 +396,7 @@ textarea:focus {
     left: var(--spacing-md);
     z-index: calc(var(--z-modal) + 1);
     background: var(--card-background);
-    border: none;
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     width: 40px;
     height: 40px;
@@ -404,10 +404,10 @@ textarea:focus {
     align-items: center;
     justify-content: center;
     gap: 4px;
+    padding: 0;
     box-shadow: var(--shadow-lg);
     transition: var(--transition);
     backdrop-filter: blur(10px);
-    border: 1px solid var(--border-color);
 }
 
 .mobile-menu-toggle:hover {
@@ -419,7 +419,7 @@ textarea:focus {
 .mobile-menu-toggle span {
     width: 18px;
     height: 2px;
-    background: var(--text-primary);
+    background: #000000;
     border-radius: var(--border-radius-full);
     transition: var(--transition);
 }
@@ -981,8 +981,22 @@ textarea:focus {
     }
     
     .app-header {
-        padding: 0 var(--spacing-lg);
-        padding-left: 60px;
+        padding: 0 var(--spacing-md);
+    }
+    
+    .header-content {
+        justify-content: center;
+        position: relative;
+    }
+    
+    .page-title {
+        text-align: center;
+        flex: 1;
+    }
+    
+    .user-menu {
+        position: absolute;
+        right: 0;
     }
     
     .dashboard {
