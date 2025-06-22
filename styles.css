@@ -392,14 +392,14 @@ textarea:focus {
 .mobile-menu-toggle {
     display: none;
     position: fixed;
-    top: var(--spacing-lg);
-    left: var(--spacing-lg);
+    top: var(--spacing-md);
+    left: var(--spacing-md);
     z-index: calc(var(--z-modal) + 1);
     background: var(--card-background);
     border: none;
-    border-radius: var(--border-radius-lg);
-    width: 48px;
-    height: 48px;
+    border-radius: var(--border-radius);
+    width: 40px;
+    height: 40px;
     flex-direction: column;
     align-items: center;
     justify-content: center;
@@ -417,7 +417,7 @@ textarea:focus {
 }
 
 .mobile-menu-toggle span {
-    width: 20px;
+    width: 18px;
     height: 2px;
     background: var(--text-primary);
     border-radius: var(--border-radius-full);
@@ -425,7 +425,7 @@ textarea:focus {
 }
 
 .mobile-menu-toggle[aria-expanded="true"] span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
+    transform: rotate(45deg) translate(4px, 4px);
 }
 
 .mobile-menu-toggle[aria-expanded="true"] span:nth-child(2) {
@@ -433,7 +433,7 @@ textarea:focus {
 }
 
 .mobile-menu-toggle[aria-expanded="true"] span:nth-child(3) {
-    transform: rotate(-45deg) translate(7px, -6px);
+    transform: rotate(-45deg) translate(5px, -4px);
 }
 
 /* Sidebar Moderna */
@@ -982,7 +982,7 @@ textarea:focus {
     
     .app-header {
         padding: 0 var(--spacing-lg);
-        padding-left: 80px;
+        padding-left: 60px;
     }
     
     .dashboard {
